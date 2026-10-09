@@ -9,16 +9,16 @@
   <link rel="apple-touch-icon" href="apple-touch-icon-classic.png">
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
-  <title>Instagram · Just your messages</title>
+  <title>Instagram · Stories &amp; messages</title>
 </head>
 <body>
   <main>
     <header>
       <img src="instagram-classic.png" alt="Instagram’s classic camera icon" width="80" height="80">
       <p class="eyebrow">YOUR ACCOUNT. LESS DISTRACTION.</p>
-      <h1>Instagram.<br>Just your messages.</h1>
+      <h1>Instagram.<br>Stories &amp; messages.</h1>
       <p class="lead">Keep the conversations. Leave the scrolling behind.</p>
-      <p>A free extension for Instagram’s website. Your real inbox, with Feed, Explore, Reels, and story browsing hidden. Switch to posting mode whenever you need Instagram’s Create controls.</p>
+      <p>A free extension for Instagram’s website. Home with friends’ stories and your real messages. Feed posts, Explore, and the Reels feed stay hidden. Shared videos open one at a time, without endless scrolling. Switch to posting mode when you need Instagram’s Create controls.</p>
       <nav aria-label="Installation options"><a class="button" href="#iphone">Set up on iPhone <span aria-hidden="true">↗</span></a><a class="secondary button" href="#desktop">Desktop extension</a></nav>
       <p class="small">Independent personal project. Not an official Instagram or Meta app.</p>
     </header>
@@ -29,33 +29,34 @@
         <li>Install <a href="https://apps.apple.com/app/userscripts/id1463298887">Userscripts</a>, the open-source Safari extension. Open it once to initialize its script folder.</li>
         <li>In iPhone Settings, open <strong>Apps → Safari → Extensions → Userscripts</strong> and enable it. On older iOS versions, Safari is directly in Settings.</li>
         <li>Open the script below <strong>in Safari</strong>. Open Safari’s page menu, select <strong>Userscripts</strong>, and choose its installation prompt. Allow access to this installation page if prompted.</li>
-        <li>Open <a href="https://www.instagram.com/direct/inbox/">Instagram Messages</a>. Allow Userscripts on <strong>instagram.com</strong>, then refresh. Sign in on Instagram if needed.</li>
+        <li>Open <a href="https://www.instagram.com/">Instagram Home</a>. Allow Userscripts on <strong>instagram.com</strong>, then refresh. Sign in on Instagram if needed.</li>
       </ol>
-      <a class="button" href="instagram-focus.user.js">Open the iPhone script</a>
+      <a class="button" href="instagram-focus.user.js?v=0.2.0">Install / update the iPhone script · v0.2.0</a>
+      <p class="small">Already installed? Replace the existing Instagram script with this version; keep only one copy enabled. Close all Instagram tabs and reopen Home. Open Focus and check for v0.2.0. Change your existing home-screen shortcut URL to https://www.instagram.com/ so it starts with stories.</p>
       <p class="small">Alternative: save the .user.js file into the folder shown in the Userscripts app, then open its Safari menu and refresh Instagram. You only need this script installed once.</p>
       <aside><strong>Check before relying on it</strong><p>You should see a small <strong>Focus</strong> button on Instagram. If it is missing, the extension is not running. Try refreshing, checking site permissions, and opening the Userscripts menu.</p></aside>
     </section>
     <section id="homescreen">
       <p class="eyebrow">02 / YOUR HOME SCREEN</p><h2>The classic icon. The name you know.</h2>
       <div class="icon-row"><img src="instagram-classic.png" width="80" height="80" alt="classic Instagram icon for your shortcut"><a href="instagram-classic.png" download="Instagram-Classic.png">Save the original icon</a></div>
-      <p>Use an Apple Shortcuts home-screen icon that opens the inbox <strong>in Safari</strong>. A standalone “Add to Home Screen” web app may not run Safari extensions, so it is not the supported setup here.</p>
+      <p>Use an Apple Shortcuts home-screen icon that opens Home <strong>in Safari</strong>. A standalone “Add to Home Screen” web app may not run Safari extensions, so it is not the supported setup here.</p>
       <ol>
         <li>Save the icon above to Photos or Files.</li>
-        <li>In <strong>Shortcuts</strong>, create a shortcut with a <strong>URL</strong> action containing <code>https://www.instagram.com/direct/inbox/</code>, followed by <strong>Open URLs</strong>. Use Safari as your default browser.</li>
+        <li>In <strong>Shortcuts</strong>, create a shortcut with a <strong>URL</strong> action containing <code>https://www.instagram.com/</code>, followed by <strong>Open URLs</strong>. Use Safari as your default browser.</li>
         <li>Name the shortcut <strong>Instagram</strong>. Open its details/menu and choose <strong>Add to Home Screen</strong>.</li>
         <li>Tap the icon → <strong>Choose Photo</strong> or <strong>Choose File</strong>, select the downloaded classic icon, then tap <strong>Add</strong>.</li>
       </ol>
       <p class="small">The icon launches Safari, where the extension runs. Check for the Focus button after launching. Shortcuts and menu labels can vary by iOS version.</p>
     </section>
     <section id="posting">
-      <p class="eyebrow">03 / WHEN YOU WANT TO POST</p><h2>Messages first. Posting when you need it.</h2>
-      <p>On Instagram, tap <strong>Focus → Open posting mode</strong>. Instagram’s regular navigation returns. Use its own Create control, then choose <strong>Posting mode → Back to messages</strong> when you finish.</p>
+      <p class="eyebrow">03 / WHEN YOU WANT TO POST</p><h2>Stories and messages first. Posting when you need it.</h2>
+      <p>On Instagram, tap <strong>Focus → Open posting mode</strong>. Instagram’s regular navigation returns. Use its own Create control, then choose <strong>Posting mode → Back to stories</strong> when you finish.</p>
       <p>Story uploading is available only if Instagram offers it for your account and browser. This extension does not add unsupported story uploads. There are no timers, daily passes, or app locks.</p>
-      <p class="small">Posting mode stays active in that tab until you return to Messages. Authentication, message delivery, notifications, attachments, and calls are provided by Instagram and depend on its web support. Reel links are hidden in focus mode, including shared Reel links; switch to posting mode to open them.</p>
+      <p class="small">Posting mode stays active in that tab until you choose Back to stories or Back to messages. Authentication, message delivery, notifications, attachments, and calls are provided by Instagram and depend on its web support. Shared Reels open as single posts. Scrolling is blocked in video views, including message pop-ups. Close the video to scroll your conversation again. Native photo-carousel controls remain available.</p>
     </section>
     <section id="desktop">
       <p class="eyebrow">04 / CHROME &amp; EDGE</p><h2>A small extension. No subscription.</h2>
-      <ol><li>Download and unzip the extension.</li><li>Open <code>chrome://extensions</code> or <code>edge://extensions</code> and turn on <strong>Developer mode</strong>.</li><li>Choose <strong>Load unpacked</strong> and select the extracted folder containing <code>manifest.json</code>.</li><li>Open Instagram Messages and check for the Focus button.</li></ol>
+      <ol><li>Download and unzip the extension.</li><li>Open <code>chrome://extensions</code> or <code>edge://extensions</code> and turn on <strong>Developer mode</strong>.</li><li>Choose <strong>Load unpacked</strong> and select the extracted folder containing <code>manifest.json</code>.</li><li>Open Instagram Home and check for the Focus button.</li></ol>
       <a class="button secondary" href="instagram-extension.zip" download>Download desktop extension</a>
       <p class="small">For Safari on Mac, use the same Userscripts installation as above. Remove the script or disable the extension to restore the original Instagram website.</p>
     </section>

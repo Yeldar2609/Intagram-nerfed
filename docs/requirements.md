@@ -7,10 +7,10 @@ The user authorized a website extension for a Personal Instagram account, with m
 | Requirement | Implementation | Verification needed |
 | --- | --- | --- |
 | Real personal inbox | Operates on Instagram's own document and session; no replacement API or synthetic inbox | Sign-in and message delivery on user's device |
-| Hide distractions | Route policy and dynamic link filtering for Home, Explore, Reels, and story browsing | Unit tests, browser fixture, then real Instagram DOM |
+| Hide distractions | Home preserves native story controls and hides feed content; Explore and the Reels feed redirect to Home; shared videos use single-post views with scroll protection | Unit tests, browser fixture, then real Instagram DOM |
 | Occasional posting | User-controlled posting mode restores Instagram's own controls | Native web upload availability must be checked on user's account; no new story API is provided |
 | No app blocking | No Screen Time, timers, daily allowances, or device restrictions | Source review |
-| Home-screen launch | Shortcuts Open URLs action opens inbox in Safari | Physical iPhone check; standalone web app is not a supported substitute |
+| Home-screen launch | Shortcuts Open URLs action opens Home in Safari | Physical iPhone check; standalone web app is not a supported substitute |
 | Name and icon | Instagram shortcut name; classic artwork supplied | User selects name/icon when adding shortcut |
 | Free distribution | Userscripts host extension for iOS; unpacked desktop extension; GitHub Pages installation site | Public downloads and Pages deployment |
 | Public source and attribution | Yeldar2609/Intagram-nerfed, user's author identity, no AI co-author trailers | Remote commit and contributor inspection |

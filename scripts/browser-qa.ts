@@ -62,8 +62,8 @@ await browse("js", "sessionStorage.clear()");
 await browse("goto", "http://127.0.0.1:4174/direct/inbox/");
 await browse("wait", "instagram-focus-controls");
 await check(
-  "Home, Explore and Reels hidden; messages visible",
-  "['home','explore','reels'].every(id=>getComputedStyle(document.getElementById(id)).display==='none') && getComputedStyle(document.getElementById('inbox')).display!=='none'",
+  "Explore and Reels hidden; Home and messages visible",
+  "['explore','reels'].every(id=>getComputedStyle(document.getElementById(id)).display==='none') && getComputedStyle(document.getElementById('inbox')).display!=='none'",
 );
 await browse("click", "#dynamic");
 await check(
@@ -76,11 +76,8 @@ await check(
   "getComputedStyle(document.getElementById('inbox')).display==='none'",
 );
 await browse("click", "#spa");
-await waitForPath("/direct/inbox/");
-await check(
-  "SPA pushState returns to inbox",
-  "location.pathname==='/direct/inbox/'",
-);
+await waitForPath("/");
+await check("SPA pushState returns to Home", "location.pathname==='/'");
 for (const width of [375, 768, 1280]) {
   await browse("viewport", `${width}x900`);
   await browse("js", `${host}.querySelector('.launcher').click()`);
@@ -118,10 +115,10 @@ await check(
 );
 await browse("screenshot", `${evidence}/exit-storage-error.png`, "--viewport");
 await browse("js", `${host}.querySelector('.primary').click()`);
-await waitForPath("/direct/inbox/");
+await waitForPath("/");
 await check(
-  "Back to messages re-enables filtering",
-  "location.pathname==='/direct/inbox/' && getComputedStyle(document.getElementById('home')).display==='none'",
+  "Back to stories re-enables filtering",
+  "location.pathname==='/' && getComputedStyle(document.getElementById('explore')).display==='none'",
 );
 await browse(
   "js",
@@ -129,7 +126,7 @@ await browse(
 );
 await check(
   "Storage denial keeps focus on and reports error",
-  `${host}.querySelector('[role=alert]')!==null && location.pathname==='/direct/inbox/' && document.documentElement.getAttribute('data-instagram-focus')==='on'`,
+  `${host}.querySelector('[role=alert]')!==null && location.pathname==='/' && document.documentElement.getAttribute('data-instagram-focus')==='on'`,
 );
 await browse("screenshot", `${evidence}/storage-error.png`, "--viewport");
 await browse("goto", "http://127.0.0.1:4174/accounts/login/");
@@ -140,8 +137,8 @@ await check(
 await browse("goto", "http://127.0.0.1:4174/reels/");
 await browse("wait", "instagram-focus-controls");
 await check(
-  "Direct Reels navigation returns to inbox",
-  "location.pathname==='/direct/inbox/'",
+  "Direct Reels navigation returns to Home",
+  "location.pathname==='/'",
 );
 for (const width of [375, 768, 1280]) {
   await browse("goto", "http://127.0.0.1:4173/");

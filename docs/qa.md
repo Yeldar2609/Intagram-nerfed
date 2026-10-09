@@ -2,7 +2,17 @@
 
 9 October 2026. Tests use synthetic, explicitly labeled content and do not access a private Instagram account.
 
-## Automated checks
+## Version 0.2.0: stories and single-post video viewing
+
+The account owner confirmed that messaging works, then reported that opened videos still allowed scrolling. The previous production script reproduced an unblocked wheel event on a shared-post route (`videoScrollBlocked: false`). Four route/link regression assertions failed before the policy change and passed afterwards.
+
+The update preserves native story links/buttons on Home, hides feed branches, converts shared Reel URLs to single-post URLs, and prevents scrolling or advancing into other video posts. It covers video dialogs that leave the conversation URL unchanged. Closing a dialog restores conversation scrolling. Controls and multiple videos inside the same selected post remain available; explicit posting mode releases the restrictions.
+
+26 unit tests, 19 baseline browser checks, and 14 story/video browser checks pass. The browser fixture additionally covers Home feed insertion, story navigation, wheel/touch/key blocking, video-ended propagation, SPA media advances, same-URL video dialogs, returning to messages, and posting bypass. Run `bun scripts/scroll-qa.ts` alongside the updated `bun scripts/browser-qa.ts`; evidence is under ignored `work/qa`.
+
+Home story detection uses native `/stories/` links and English story-labeled buttons. Authenticated Instagram DOM variants, other UI languages, real video playback, and physical iPhone gestures have not been verified. If Instagram supplies an unrecognized story tray, Home feed content stays hidden; this is not proof that stories will render on every account. Updating requires replacing the installed script, closing old tabs, and changing an existing shortcut URL to `https://www.instagram.com/`.
+
+## Version 0.1 baseline automated checks
 
 - Strict TypeScript check: passed.
 - Biome: no errors or warnings; one informational preference for environment-variable property syntax retained to comply with strict index-signature typing.

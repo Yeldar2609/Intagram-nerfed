@@ -20,8 +20,8 @@ await writeFile("dist/extension/content.js", code);
 const metadata = `// ==UserScript==
 // @name         Instagram — just messages
 // @namespace    https://github.com/Yeldar2609/Intagram-nerfed
-// @version      0.1.1
-// @description  Hide Feed, Explore, Reels and story browsing; keep Instagram's real messages. Optional posting mode.
+// @version      0.2.0
+// @description  Stories and messages without feed posts or endless video scrolling. Optional posting mode.
 // @match        https://www.instagram.com/*
 // @match        https://instagram.com/*
 // @run-at       document-start
@@ -59,9 +59,9 @@ await writeFile(
     {
       manifest_version: 3,
       name: "Instagram — just messages",
-      version: "0.1.1",
+      version: "0.2.0",
       description:
-        "A personal focus extension. Hides distracting Instagram routes; keeps the real inbox. Independent of Meta.",
+        "A personal focus extension. Stories and messages without endless scrolling. Independent of Meta.",
       icons: { "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
       content_scripts: [
         {

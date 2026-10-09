@@ -1,8 +1,17 @@
 import { FILTER_CSS, filterLinks } from "./filter";
+import { hasMediaView, installMediaGuard } from "./media";
 import { createPanel } from "./panel";
-import { INBOX, isAuthPath, isDistractionPath, shouldRedirect } from "./policy";
+import {
+  HOME,
+  INBOX,
+  isAuthPath,
+  isDistractionPath,
+  shouldRedirect,
+  singlePostPath,
+} from "./policy";
+import { filterSurfaces, SURFACE_CSS } from "./surfaces";
 
-const KEY = "instagram-focus-posting-v1";
+const KEY = "instagram-focus-posting-v2";
 const ROOT = "data-instagram-focus";
 const INSTALLED = "data-instagram-focus-installed";
 
@@ -27,23 +36,54 @@ function start(): void {
     }
   }
   const style = document.createElement("style");
-  style.textContent = FILTER_CSS;
+  style.textContent = FILTER_CSS + SURFACE_CSS;
   document.documentElement.append(style);
   let panel: HTMLElement | undefined;
   let lastPath = "";
   let scheduled = false;
+  let lockedPost: string | undefined;
+  function changeMode(value: boolean, path: string): boolean {
+    if (!savePosting(value)) return false;
+    if (location.pathname === path) {
+      panel?.remove();
+      panel = undefined;
+      sync();
+    } else location.assign(path);
+    return true;
+  }
+  installMediaGuard(() => posting);
   function sync(): void {
     scheduled = false;
     const path = location.pathname;
+    const media = !posting && !isAuthPath(path) && hasMediaView(document, path);
+    const post = posting ? undefined : singlePostPath(path);
+    if (!media) lockedPost = undefined;
+    if (media) lockedPost ??= post ?? path;
+    if (post) {
+      if (post !== lockedPost || /^\/reels?\//i.test(path)) {
+        document.documentElement.setAttribute(ROOT, "redirecting");
+        location.replace(lockedPost ?? post);
+        return;
+      }
+    }
     if (shouldRedirect(path, posting)) {
       document.documentElement.setAttribute(ROOT, "redirecting");
-      location.replace(INBOX);
+      location.replace(HOME);
       return;
     }
     const auth = isAuthPath(path);
     const state = auth || posting ? "off" : "on";
     if (document.documentElement.getAttribute(ROOT) !== state)
       document.documentElement.setAttribute(ROOT, state);
+    const view =
+      state === "off"
+        ? "off"
+        : media
+          ? "media"
+          : path === HOME
+            ? "home"
+            : "other";
+    document.documentElement.setAttribute("data-instagram-focus-view", view);
     if (auth) {
       panel?.remove();
       panel = undefined;
@@ -54,20 +94,14 @@ function start(): void {
       panel?.remove();
       panel = createPanel(document, {
         posting,
-        onMessages: () => {
-          if (!savePosting(false)) return false;
-          location.assign(INBOX);
-          return true;
-        },
-        onPosting: () => {
-          if (!savePosting(true)) return false;
-          location.assign("/");
-          return true;
-        },
+        onHome: () => changeMode(false, HOME),
+        onMessages: () => changeMode(false, INBOX),
+        onPosting: () => changeMode(true, HOME),
       });
       document.body.append(panel);
     }
     filterLinks(document, posting);
+    filterSurfaces(document, path, posting);
     lastPath = path;
   }
   function schedule(): void {
@@ -90,7 +124,7 @@ function start(): void {
       if (url.origin === location.origin && isDistractionPath(url.pathname)) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        location.assign(INBOX);
+        location.assign(HOME);
       }
     },
     true,
@@ -99,7 +133,7 @@ function start(): void {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["href"],
+    attributeFilter: ["href", "aria-label", "role"],
   });
   window.addEventListener("popstate", schedule);
   window.addEventListener("pageshow", schedule);

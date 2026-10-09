@@ -18,7 +18,7 @@ No custom Apple developer account is needed to use an existing script-host exten
 
 ## Home-screen behavior
 
-The supported recipe is an Apple Shortcuts home-screen icon that opens Instagram's inbox URL in Safari, with Safari set as the default browser. A standalone Add to Home Screen web app is not a verified extension execution context and is not represented as supported. Browser chrome remains visible. The installation guide includes the classic icon and manual shortcut steps.
+The supported recipe is an Apple Shortcuts home-screen icon that opens Instagram's Home URL (https://www.instagram.com/) in Safari, with Safari set as the default browser. A standalone Add to Home Screen web app is not a verified extension execution context and is not represented as supported. Browser chrome remains visible. The installation guide includes the classic icon and manual shortcut steps.
 
 ## Posting limits
 

@@ -12,12 +12,12 @@ Shared implementation tokens live in `src/tokens.ts`: included in the shadow-roo
 Native system UI stack (-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif). Body 16px/1.6, label 14px/1.4, page heading responsive 32–48px/1.15, section heading 24px/1.3. Use native UI typography to blend with the user's inbox.
 
 ## 4. Spacing & Layout
-4px base with 8/12/16/24/32/48px steps. Site max width 760px; mobile padding 24px, desktop 48px. Controls min-height 44px. Extension launcher fixed right 16px, bottom calc(80px + safe-area-inset-bottom); narrow settings panel width min(320px, viewport minus 32px). No full-page overlay, no changes to the inbox scroll container. Root feed stays hidden during route redirection.
+4px base with 8/12/16/24/32/48px steps. Site max width 760px; mobile padding 24px, desktop 48px. Controls min-height 44px. Extension launcher fixed right 16px, bottom calc(80px + safe-area-inset-bottom); narrow settings panel width min(320px, viewport minus 32px). No full-page overlay, conversation scrolling stays unchanged except while a video dialog is open. Root feed stays hidden during route redirection.
 
 ## 5. Components
 - Action link/button: 12px radius, primary blue or secondary dark. Hover color, active opacity, visible 3px focus outline, disabled native state. Real links for downloads and navigation.
 - Focus launcher: 44px pill, text label, expanded ARIA state, opens a shadow-root panel. Kept separate from Instagram's DOM styling. Hidden on authentication routes.
-- Focus panel: heading, current mode, Messages action, Posting mode action, close button. Keyboard Escape closes and returns focus. No focus trap because the panel is nonmodal. Posting mode clearly exposes Instagram's regular site temporarily. No automatic publishing.
+- Focus panel: heading, current mode, Stories action, Messages action, Posting mode action, close button. Keyboard Escape closes and returns focus. No focus trap because the panel is nonmodal. Posting mode clearly exposes Instagram's regular site temporarily. No automatic publishing.
 - Installation section: heading, numbered native list, download action. Steps remain visible without JavaScript. iPhone/desktop/shortcut sections are anchor-linked, not hidden tabs.
 - Primitive harness: test fixture exposes launcher open/closed and focus/posting states; real screenshots at 375/768/1280px before release.
 

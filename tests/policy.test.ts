@@ -8,17 +8,17 @@ import {
 
 describe("Instagram navigation policy", () => {
   test.each([
-    "/",
     "/explore/",
     "/explore/search/",
     "/reels/",
-    "/reel/abc/",
-    "/stories/alex/123/",
-  ])("redirects %s to the inbox in focus mode", (path) => {
-    // Given a distracting Instagram route, when focus mode evaluates it, then return to messages.
+  ])("redirects %s to Home in focus mode", (path) => {
+    // Given a distracting Instagram route, when focus mode evaluates it, then return to Home.
     expect(shouldRedirect(path, false)).toBe(true);
   });
   test.each([
+    "/",
+    "/reel/abc/",
+    "/stories/alex/123/",
     INBOX,
     "/direct/t/123/",
     "/accounts/login/",

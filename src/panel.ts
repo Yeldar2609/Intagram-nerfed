@@ -1,6 +1,7 @@
 import { TOKENS } from "./tokens";
 export type PanelOptions = {
   readonly posting: boolean;
+  readonly onHome: () => boolean;
   readonly onMessages: () => boolean;
   readonly onPosting: () => boolean;
 };
@@ -31,21 +32,31 @@ export function createPanel(doc: Document, options: PanelOptions): HTMLElement {
   panel.hidden = true;
   panel.setAttribute("aria-label", "Instagram focus settings");
   const title = doc.createElement("h2");
-  title.textContent = options.posting ? "Posting mode" : "Just your messages";
+  title.textContent = options.posting ? "Posting mode" : "Stories & messages";
   const description = doc.createElement("p");
   description.textContent = options.posting
     ? "Instagram’s regular navigation is temporarily available. Use its Create control to post. Stories are available only if Instagram offers them on your browser. Return to Messages when finished."
-    : "Feed, Explore, Reels, and story browsing are hidden. Your messages stay on Instagram. Posting mode brings back Instagram’s own Create controls.";
+    : "Home shows stories without feed posts. Shared videos open one at a time with scrolling disabled. Explore and the Reels feed stay hidden. v0.2.0";
   const actions = doc.createElement("div");
   actions.className = "actions";
   const messages = doc.createElement("button");
   messages.type = "button";
-  messages.className = "primary";
   messages.textContent = "Back to messages";
   messages.addEventListener("click", () => {
     if (!options.onMessages()) {
       description.textContent =
         "Could not save focus mode. Allow website storage for Instagram and try again, or close this tab and open a new one. Posting mode is still active.";
+      description.setAttribute("role", "alert");
+    }
+  });
+  const home = doc.createElement("button");
+  home.type = "button";
+  home.className = "primary";
+  home.textContent = "Back to stories";
+  home.addEventListener("click", () => {
+    if (!options.onHome()) {
+      description.textContent =
+        "Could not save focus mode. Allow website storage for Instagram and try again. Posting mode is still active.";
       description.setAttribute("role", "alert");
     }
   });
@@ -72,7 +83,7 @@ export function createPanel(doc: Document, options: PanelOptions): HTMLElement {
   function setOpen(open: boolean): void {
     panel.hidden = !open;
     launcher.setAttribute("aria-expanded", String(open));
-    if (open) messages.focus();
+    if (open) home.focus();
     else launcher.focus();
   }
   launcher.addEventListener("click", () => setOpen(panel.hidden));
@@ -81,7 +92,7 @@ export function createPanel(doc: Document, options: PanelOptions): HTMLElement {
     if (event instanceof KeyboardEvent && event.key === "Escape")
       setOpen(false);
   });
-  actions.append(messages, post, close);
+  actions.append(home, messages, post, close);
   panel.append(title, description, actions);
   wrap.append(panel, launcher);
   shadow.append(style, wrap);
