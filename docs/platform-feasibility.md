@@ -2,6 +2,10 @@
 
 Verified 9 October 2026 using the gstack browse browser and primary documentation.
 
+## Revised scope
+
+The user has removed app blocking and daily passes, selected website-only installation, and confirmed a Personal account. The requested installed name is Instagram, using the original 2016 gradient camera icon. Native app restriction notes below remain background research, not implementation requirements. Personal inbox access and distraction filtering remain unresolved.
+
 ## Standalone home-screen website
 
 The browser's same-origin policy prevents a hosted page from reading or rewriting another origin's document or storage. Opening Instagram in a window or embedding it does not grant access to its private inbox or navigation. CORS requires the remote server's cooperation; it is not a client-side switch.
@@ -38,10 +42,14 @@ An extension can restrict the Instagram web surface where it runs. It cannot ind
 
 ## Implementation decision
 
-Pending the user's choice:
+The original alternatives were:
 
 1. Browser extension: real Instagram web messaging and page restrictions, with a separate extension installation and testing against Instagram's changing DOM.
 2. Native iPhone application: closest route toward the combined messaging and app restriction goal, with Apple build/distribution and entitlement dependencies.
 3. Standalone website: meets hosting and home-screen installation requirements, but omits integrated personal DMs and enforced Instagram blocking. This is a scope change requiring the user's explicit choice.
 
-The original goal remains incomplete until a route is selected, implemented, deployed or distributed as agreed, and verified on the target device.
+The user selected website-only while retaining real personal messaging and occasional story posting. That does not authorize replacing the inbox with a launcher. The supported API and browser-origin constraints remain. A fresh attempt to open Meta's overview returned a temporary unavailable page; the messaging documentation from the earlier check remains the evidence for professional-account scope.
+
+The Instagram-owned URL https://www.instagram.com/direct/inbox/ was checked in an unauthenticated browser. It redirects to Instagram's own login with the inbox as its return destination. This proves a direct login entry exists, not that authenticated messaging, story publishing, a custom home-screen icon, or distraction filtering has been tested. The user's account has not been accessed.
+
+The project remains incomplete. Removing blocking is accepted and recorded; no reduced-function substitute has been approved.
