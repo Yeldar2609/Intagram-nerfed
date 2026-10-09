@@ -1,35 +1,20 @@
-# Feature requirements
+# Current requirements
 
-Source: the user's four reference screenshots and subsequent clarification on 9 October 2026. The clarification supersedes screenshot blocking and daily-pass features. The user confirmed that the Instagram account is Personal.
+Updated 9 October 2026. This supersedes the original website-only feasibility decision.
 
-## Requested outcome
+The user authorized a website extension for a Personal Instagram account, with messaging, fewer distractions, occasional story posting, and a home-screen shortcut named Instagram using the original 2016 icon if possible. Native-app blocking, daily passes, and timed unlocks were removed from scope.
 
-Deliver a working, free personal Instagram companion, host its web surface online, and support an iPhone home-screen installation. The user intends to delete the native Instagram app. Use the home-screen name `Instagram` and the original 2016 gradient camera icon. Preserve the public repository name `Intagram-nerfed`. Do not add AI contributor or co-author attribution.
-
-## Acceptance criteria
-
-| Requirement | Evidence required for completion | Current status |
+| Requirement | Implementation | Verification needed |
 | --- | --- | --- |
-| Personal Instagram inbox | Actual signed-in account loads real conversations; sending a message delivers it to its recipient | Not implemented; standalone website integration blocked by platform constraints |
-| Distraction-free messaging | Feed, Explore, and Reels navigation and direct routes stay unavailable while messaging remains functional | Not implemented; requires control inside Instagram's page or a native container |
-| Occasional story posting | User can publish a real story to the confirmed Personal account without reinstalling the native Instagram app | Not implemented; supported integration must be established |
-| No app blocking | Do not implement Screen Time controls, daily passes, intent gates, or timed unlocks | Removed from scope |
-| Home-screen identity | Installed name is Instagram and icon is the requested 2016 gradient camera mark | Requested; not implemented |
-| Mobile installation | Verified manifest, icons, standalone display, safe-area layout, and home-screen launch on an iPhone | Not implemented |
-| Online hosting | Public HTTPS URL serves the application successfully | Not implemented |
-| Free to use | No project subscription or paid backend dependency; any platform distribution cost disclosed before choosing that route | Architecture pending |
-| Public source | Public repository under the user's account | Verified: Yeldar2609/Intagram-nerfed |
-| Attribution | No AI authors or co-author trailers | Verified for initial repository commit; recheck at release |
+| Real personal inbox | Operates on Instagram's own document and session; no replacement API or synthetic inbox | Sign-in and message delivery on user's device |
+| Hide distractions | Route policy and dynamic link filtering for Home, Explore, Reels, and story browsing | Unit tests, browser fixture, then real Instagram DOM |
+| Occasional posting | User-controlled posting mode restores Instagram's own controls | Native web upload availability must be checked on user's account; no new story API is provided |
+| No app blocking | No Screen Time, timers, daily allowances, or device restrictions | Source review |
+| Home-screen launch | Shortcuts Open URLs action opens inbox in Safari | Physical iPhone check; standalone web app is not a supported substitute |
+| Name and icon | Instagram shortcut name; original 2016 artwork supplied | User selects name/icon when adding shortcut |
+| Free distribution | Userscripts host extension for iOS; unpacked desktop extension; GitHub Pages installation site | Public downloads and Pages deployment |
+| Public source and attribution | Yeldar2609/Intagram-nerfed, user's author identity, no AI co-author trailers | Remote commit and contributor inspection |
 
-## Remaining integration decision
+## Do not overclaim
 
-The user has selected website-only and confirmed a Personal account. Do not ask them to select their account type again. These requirements do not have a supported standalone custom-website integration. Further progress requires accepting Instagram's own website (which retains its navigation), accepting a different installation method, or establishing a separately reviewed integration architecture. None has been accepted yet. Do not silently substitute demo conversations, a professional-account inbox, or an Instagram launch button.
-
-The exact behavior of screenshot features that depend on Instagram, including notes, attachments, calls, and shared Reels in messages, must be tested against the real integration. An imitation chat UI is not proof of support.
-
-## Data handling
-
-- Do not request Instagram passwords in this project's UI.
-- Keep Instagram login on Instagram's own origin.
-- Do not publish credentials, cookies, session tokens, private messages, or the user's reference attachments in the repository.
-- Do not implement the removed blocking or pass-counter features.
+A browser fixture is labeled synthetic and is not shipped in the installation site. A green test suite is not proof of authenticated account behavior. Userscripts must be installed and enabled on the user's device before the Focus button appears. Posting mode exposes the regular website temporarily, with no automatic return timer. The original screenshot's full native-app feature parity is not claimed.

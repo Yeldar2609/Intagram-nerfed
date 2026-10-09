@@ -1,55 +1,33 @@
-# Platform feasibility
+# Platform decision and sources
 
-Verified 9 October 2026 using the gstack browse browser and primary documentation.
+Updated 9 October 2026. The earlier website-only decision is superseded: the user authorized an extension for Instagram's website and a home-screen icon where possible.
 
-## Revised scope
+## Chosen architecture
 
-The user has removed app blocking and daily passes, selected website-only installation, and confirmed a Personal account. The requested installed name is Instagram, using the original 2016 gradient camera icon. Native app restriction notes below remain background research, not implementation requirements. Personal inbox access and distraction filtering remain unresolved.
+A content script runs on Instagram's own page, using the user's existing Instagram session. It changes navigation and link visibility; it does not implement a third-party Instagram API, collect credentials, or download private messages to a server. The same bundled script ships as a Manifest V3 desktop extension and a userscript for the Userscripts Safari extension.
 
-## Standalone home-screen website
+The hosted website distributes the script, desktop ZIP, original icon, and installation guide. It does not pretend to be a personal-account OAuth client or inbox.
 
-The browser's same-origin policy prevents a hosted page from reading or rewriting another origin's document or storage. Opening Instagram in a window or embedding it does not grant access to its private inbox or navigation. CORS requires the remote server's cooperation; it is not a client-side switch.
+## iPhone distribution
 
-Source: [MDN: Same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy).
+Userscripts documents App Store installation, enabling the Safari extension, `.user.js` installation from a webpage or script directory, document-start injection and isolated content context. The implementation uses that mechanism without GM permissions or external runtime dependencies.
 
-Consequently, a standalone website can provide installation instructions and its own local features, but cannot implement the requested Instagram inbox and distraction filtering by changing Instagram from outside its origin. A locally stored timer cannot lock another website or the native Instagram app.
+Primary documentation: https://github.com/quoid/userscripts#usage
 
-## Meta messaging API
+No custom Apple developer account is needed to use an existing script-host extension. A custom Safari app extension would have Apple's separate packaging/distribution requirements: https://developer.apple.com/documentation/safariservices/safari-web-extensions
 
-Meta's documented Instagram messaging API supports professional Instagram accounts and has messaging requirements and restrictions. It is not a general replacement for an arbitrary personal Instagram inbox, including the complete group conversation experience in the reference.
+## Home-screen behavior
 
-Source: [Meta: Instagram messaging API](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/messaging-api).
+The supported recipe is an Apple Shortcuts home-screen icon that opens Instagram's inbox URL in Safari, with Safari set as the default browser. A standalone Add to Home Screen web app is not a verified extension execution context and is not represented as supported. Browser chrome remains visible. The installation guide includes the 2016 icon and manual shortcut steps.
 
-Do not build a professional-account integration and claim that it fulfills the user's personal messaging request.
+## Posting limits
 
-## Native app restrictions
+Posting mode exposes Instagram's own UI. It does not add a publishing API or guarantee that Instagram offers story uploading, calls, notifications, or attachments on every browser/account. That must be verified on the user's iPhone. The user removed timers, daily passes and app blocking.
 
-Apple's Family Controls framework requires native capabilities, authorization, and an entitlement. Distribution requires the applicable Apple setup and entitlement approval. This framework is not exposed as a PWA API.
+## Why the standalone site was not used
 
-Source: [Apple: Family Controls](https://developer.apple.com/documentation/familycontrols).
+A separate website cannot read or modify Instagram's document under the same-origin policy: https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
 
-A native application is a possible route toward app-level restrictions. A native Instagram web container would still require real-device verification of login, messaging, media, calling, filtering, and navigation. Merely wrapping a URL is not feature parity.
+Meta's supported messaging integration targets professional accounts, while this user confirmed a Personal account: https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/messaging-api
 
-## Safari extension
-
-A Safari web extension can run permissioned content scripts on Instagram's own web pages, making distraction filtering technically possible without collecting Instagram credentials. The signed-in Instagram web experience supplies the real conversations.
-
-Apple documents Safari extensions as iOS app extensions with a distribution process. They are a different installation from Add to Home Screen. The current documentation also links a packaging route through App Store Connect without a Mac; availability and account requirements must be checked before promising that route.
-
-Source: [Apple: Safari web extensions](https://developer.apple.com/documentation/safariservices/safari-web-extensions).
-
-An extension can restrict the Instagram web surface where it runs. It cannot independently shield the native Instagram app. Do not assume an iPhone standalone home-screen web app runs Safari extensions; verify the target context explicitly.
-
-## Implementation decision
-
-The original alternatives were:
-
-1. Browser extension: real Instagram web messaging and page restrictions, with a separate extension installation and testing against Instagram's changing DOM.
-2. Native iPhone application: closest route toward the combined messaging and app restriction goal, with Apple build/distribution and entitlement dependencies.
-3. Standalone website: meets hosting and home-screen installation requirements, but omits integrated personal DMs and enforced Instagram blocking. This is a scope change requiring the user's explicit choice.
-
-The user selected website-only while retaining real personal messaging and occasional story posting. That does not authorize replacing the inbox with a launcher. The supported API and browser-origin constraints remain. A fresh attempt to open Meta's overview returned a temporary unavailable page; the messaging documentation from the earlier check remains the evidence for professional-account scope.
-
-The Instagram-owned URL https://www.instagram.com/direct/inbox/ was checked in an unauthenticated browser. It redirects to Instagram's own login with the inbox as its return destination. This proves a direct login entry exists, not that authenticated messaging, story publishing, a custom home-screen icon, or distraction filtering has been tested. The user's account has not been accessed.
-
-The project remains incomplete. Removing blocking is accepted and recorded; no reduced-function substitute has been approved.
+The extension operates inside the Instagram page instead of pretending that signing in transfers Instagram access to another website.
