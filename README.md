@@ -10,7 +10,7 @@ A free focus extension for Instagram's real website. Use your existing Personal 
 - Hides links to those routes, including links Instagram inserts dynamically.
 - Keeps Instagram's native conversations and account/security pages.
 - Offers manual **Posting mode** to restore Instagram's regular navigation and Create controls. **Back to messages** restores filtering. No timers or daily limits.
-- Includes the original 2016 Instagram icon and instructions for a home-screen shortcut named **Instagram**.
+- Includes the classic Instagram icon and instructions for a home-screen shortcut named **Instagram**.
 
 Story uploading works only where Instagram itself supports it on the web. This extension does not add an unsupported publishing API. Reel links shared in chats are also hidden in focus mode; switch to posting mode to open them. Profile pages and ordinary shared posts are preserved. This is a distraction filter, not a security restriction.
 
@@ -18,7 +18,7 @@ Story uploading works only where Instagram itself supports it on the web. This e
 
 Use the free, open-source [Userscripts Safari extension](https://github.com/quoid/userscripts). Install the `.user.js` file from the installation page, allow it on instagram.com, then refresh Instagram. No Apple developer account or custom native app is required.
 
-For the home-screen icon, use Apple Shortcuts to open `https://www.instagram.com/direct/inbox/` in Safari, and choose the provided 2016 icon. **Standalone home-screen web apps are not the supported execution context:** they may not run Safari extensions. The shortcut opens Safari and its browser chrome remains visible. Set Safari as your default browser.
+For the home-screen icon, use Apple Shortcuts to open `https://www.instagram.com/direct/inbox/` in Safari, and choose the provided classic icon. **Standalone home-screen web apps are not the supported execution context:** they may not run Safari extensions. The shortcut opens Safari and its browser chrome remains visible. Set Safari as your default browser.
 
 The installation page has the complete steps and downloadable icon. Check for the **Focus** button on Instagram to confirm that the script is running.
 

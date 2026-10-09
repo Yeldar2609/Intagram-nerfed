@@ -1,10 +1,10 @@
 # Instagram focus design
 
 ## 1. Atmosphere & Identity
-Keep Instagram's real inbox intact. The supplied screenshots establish dark neutral surfaces, compact controls, and a blue primary action. Do not fabricate chat data or recreate the inbox. The requested 2016 Instagram icon is used at the user's direction; the installation page identifies this as an independent extension. This is an operational extension, not a marketing-site redesign.
+Keep Instagram's real inbox intact. The supplied screenshots establish dark neutral surfaces, compact controls, and a blue primary action. Do not fabricate chat data or recreate the inbox. The requested classic Instagram icon is used at the user's direction; the installation page identifies this as an independent extension. This is an operational extension, not a marketing-site redesign.
 
 ## 2. Color
-Dark background #101114; raised surface #202126; border #42444c; primary text #f5f5f7; secondary #b9bbc4; blue action #1769e8 (white label); hover #1255bd; focus #86bcff. Icon colors come from the original SVG asset. No decorative gradients beyond that asset.
+Dark background #101114; raised surface #202126; border #42444c; primary text #f5f5f7; secondary #b9bbc4; blue action #1769e8 (white label); hover #1255bd; focus #86bcff. Icon colors come from the user-supplied PNG asset. No decorative gradients beyond that asset.
 
 Shared implementation tokens live in `src/tokens.ts`: included in the shadow-root stylesheet and emitted as the installation site's `tokens.css`. Spacing, typography, radii, focus, elevation and motion use these same variables on both surfaces.
 

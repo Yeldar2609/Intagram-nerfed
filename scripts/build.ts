@@ -20,7 +20,7 @@ await writeFile("dist/extension/content.js", code);
 const metadata = `// ==UserScript==
 // @name         Instagram — just messages
 // @namespace    https://github.com/Yeldar2609/Intagram-nerfed
-// @version      0.1.0
+// @version      0.1.1
 // @description  Hide Feed, Explore, Reels and story browsing; keep Instagram's real messages. Optional posting mode.
 // @match        https://www.instagram.com/*
 // @match        https://instagram.com/*
@@ -33,23 +33,33 @@ const metadata = `// ==UserScript==
 await writeFile("dist/site/instagram-focus.user.js", metadata + code);
 await cp("site", "dist/site", { recursive: true });
 await writeFile("dist/site/tokens.css", `:root { ${TOKENS} }`);
-await cp("assets/instagram-2016.svg", "dist/site/instagram-2016.svg");
-const sizes = [48, 128, 180, 512] as const;
+const sizes = [32, 48, 128, 180, 512] as const;
 for (const size of sizes) {
-  await sharp("assets/instagram-2016.svg")
-    .resize(size, size)
+  await sharp("assets/instagram-classic.png")
+    .trim()
+    .resize(size, size, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
     .png()
     .toFile(`dist/extension/icons/icon-${size}.png`);
 }
-await cp("dist/extension/icons/icon-512.png", "dist/site/instagram-2016.png");
-await cp("dist/extension/icons/icon-180.png", "dist/site/apple-touch-icon.png");
+await cp(
+  "dist/extension/icons/icon-512.png",
+  "dist/site/instagram-classic.png",
+);
+await cp("dist/extension/icons/icon-32.png", "dist/site/favicon-classic.png");
+await cp(
+  "dist/extension/icons/icon-180.png",
+  "dist/site/apple-touch-icon-classic.png",
+);
 await writeFile(
   "dist/extension/manifest.json",
   JSON.stringify(
     {
       manifest_version: 3,
       name: "Instagram — just messages",
-      version: "0.1.0",
+      version: "0.1.1",
       description:
         "A personal focus extension. Hides distracting Instagram routes; keeps the real inbox. Independent of Meta.",
       icons: { "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
@@ -78,5 +88,5 @@ for await (const path of new Bun.Glob("**/*").scan({
 }
 await writeFile("dist/site/instagram-extension.zip", zipSync(files));
 console.info(
-  "Built extension, iPhone userscript, installation site, and original icon.",
+  "Built extension, iPhone userscript, installation site, and classic icon.",
 );
