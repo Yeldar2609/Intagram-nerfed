@@ -18,7 +18,7 @@ Native system UI stack (-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif)
 - Action link/button: 12px radius, primary blue or secondary dark. Hover color, active opacity, visible 3px focus outline, disabled native state. Real links for downloads and navigation.
 - Focus launcher: 44px pill, text label, expanded ARIA state, opens a shadow-root panel. Kept separate from Instagram's DOM styling. Hidden on authentication routes.
 - Focus panel: heading, current mode, Stories action, Messages action, Posting mode action, close button. Keyboard Escape closes and returns focus. No focus trap because the panel is nonmodal. Posting mode clearly exposes Instagram's regular site temporarily. No automatic publishing.
-- Installation section: heading, numbered native list, download action. Steps remain visible without JavaScript. iPhone/desktop/shortcut sections are anchor-linked, not hidden tabs.
+- Installation section: three short, always-visible iPhone steps with one primary install/update action. Keep the classic icon and existing colors. Home-screen setup, update/help, and desktop instructions use native details/summary disclosures, closed initially. Summaries have at least 44px targets, visible focus, native keyboard behavior, and open/closed indicators. All instructions work without JavaScript.
 - Primitive harness: test fixture exposes launcher open/closed and focus/posting states; real screenshots at 375/768/1280px before release.
 
 ## 6. Motion & Interaction
