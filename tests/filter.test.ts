@@ -12,7 +12,7 @@ test("hides distraction links while preserving messages and external URLs", () =
     false,
   );
   expect(window.document.querySelector("#explore")?.hasAttribute(HIDDEN)).toBe(
-    true,
+    false,
   );
   expect(window.document.querySelector("#dm")?.hasAttribute(HIDDEN)).toBe(
     false,

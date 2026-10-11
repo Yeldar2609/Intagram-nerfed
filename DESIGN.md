@@ -1,4 +1,4 @@
-# Design contract — v0.3.0
+# Design contract — v0.3.1
 
 Keep the real Instagram interface. No fabricated inbox, feed or login. The supplied classic icon remains the only image asset on the installation page. Dark neutral surfaces and blue actions follow shared tokens in src/tokens.ts.
 
@@ -9,12 +9,12 @@ Background #101114; surface #202126; text #f5f5f7; muted #b9bbc4; border #42444c
 ## Components
 
 - Remove Focus and posting mode completely. No import/export controls.
-- On Home and profiles, a compact bottom navigation has Home, Messages, Search and Profile. Safe-area padding protects iPhone controls. The bar is absent in stories and messages to avoid covering native controls. Body has bottom clearance.
-- Profile becomes available when the signed-in account is resolved. A small live status reports automatic checks or temporary failure. No approval prompts or recurring manual setup.
-- Search is a full-page shadow DOM surface at /#user-search with a Back link. It accepts an exact username and opens the native profile; no results grid or Explore content. Underlying content is hidden while open.
+- Preserve Instagram's own navigation DOM, icons, handlers and layout. No replacement toolbar, search page, or body-padding overrides. Reels-feed links remain hidden; original Home, Search, Messages and Profile controls stay native.
+- A small inline live status before the main content reports pending checks or an error reason. No buttons or overlays. No approval prompts or recurring manual setup.
+- Native Search retains input and people results while Explore post articles, grid links and non-avatar media are hidden. Legacy /#user-search bookmarks move to native /explore/search/.
 - Installation stays three short steps, then collapsed Home Screen/help/desktop instructions. Classic icon and concise text.
 - No decorative motion. Hover/focus/active states use shared tokens. Keyboard form submission, native validation and readable error feedback.
 
 ## Verification limits
 
-Capture search/site at 375/768/1280px, plus search error, automatic pending/unavailable states, Home and mutual/own/nonmutual profiles in the local fixture. This proves local UI and adapter behavior, not authenticated Instagram or physical iPhone execution. Unknown authors/grids stay hidden.
+Capture search/site at 375/768/1280px, plus automatic pending/unavailable states, Home and mutual/own/nonmutual profiles in the local fixture. Native fixture controls are preserved, not replacements rendered by the extension. This proves local UI and adapter behavior, not authenticated Instagram appearance or physical iPhone execution. Unknown authors/grids stay hidden.

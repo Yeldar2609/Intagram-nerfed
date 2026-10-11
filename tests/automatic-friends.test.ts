@@ -170,6 +170,22 @@ test("honors backoff even when the initial account lookup is rate limited", asyn
   expect(requests).toBe(1);
   expect(checks.snapshot(120_000).mutuals).toEqual([]);
 });
+
+test("an unsupported owner endpoint does not pause author checks", async () => {
+  const checks = new FriendChecks(
+    {
+      ...api,
+      owner: async () => {
+        throw new CheckUnavailable(60_000, "unsupported", false);
+      },
+    },
+    () => {},
+  );
+  checks.update("1", ["friend"], 0);
+  await checks.tick(0);
+  await checks.tick(3000);
+  expect(checks.snapshot(3001).mutuals).toEqual(["friend"]);
+});
 test("own profile approval also expires if account refresh becomes unavailable", async () => {
   const checks = new FriendChecks(api, () => {});
   checks.update("1", [], 0);

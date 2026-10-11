@@ -17,6 +17,7 @@ export function filterSurfaces(
 ): void {
   const hidden = new Set<Element>();
   const home = path === "/";
+  const search = /^\/explore(?:\/|$)/i.test(path);
   const native =
     /^\/(?:direct|stories|accounts|challenge|checkpoint|oauth)(?:\/|$)/i.test(
       path,
@@ -32,6 +33,7 @@ export function filterSurfaces(
         !articleAuthor(article);
       article.toggleAttribute("data-instagram-friends-grid", grid);
       const allow =
+        !search &&
         maySeePosts(articleAuthor(article), friends) &&
         !/\bSponsored\b/i.test(
           article.querySelector("header")?.textContent ?? "",
@@ -69,7 +71,12 @@ export function filterSurfaces(
       const stories = Array.from(main.querySelectorAll(STORIES)).filter(
         (story) => !story.closest('article, [role="feed"]'),
       );
-      const keep = [...stories, ...approved];
+      const controls = Array.from(
+        main.querySelectorAll(
+          'header,nav,[role="navigation"],[role="search"],[role="searchbox"],[role="listbox"]',
+        ),
+      ).filter((node) => !node.closest('article,[role="feed"]'));
+      const keep = [...stories, ...approved, ...controls];
       function keepStories(node: Element): void {
         if (keep.some((story) => story === node)) return;
         for (const child of node.children) {
@@ -79,6 +86,21 @@ export function filterSurfaces(
       }
       keepStories(main);
       main.setAttribute(READY, "");
+    }
+  }
+  if (search) {
+    for (const main of doc.querySelectorAll(MAIN)) {
+      for (const media of main.querySelectorAll("img,video")) {
+        const link = media.closest<HTMLAnchorElement>("a[href]");
+        const url = link ? new URL(link.href, doc.baseURI) : undefined;
+        const avatar =
+          media.tagName === "IMG" &&
+          url &&
+          url.origin === new URL(doc.baseURI).origin &&
+          profileName(url.pathname) &&
+          !media.closest("article");
+        if (!avatar) hidden.add(media);
+      }
     }
   }
   const id = mediaId(path);
@@ -130,6 +152,7 @@ export function filterSurfaces(
 }
 
 export const SURFACE_CSS = `
+html[data-instagram-focus="on"] [data-instagram-friends-status] {font:inherit;line-height:1.4;margin:12px auto;padding:0 16px;max-width:600px;box-sizing:border-box;overflow-wrap:anywhere;color:inherit}
 html[data-instagram-focus="on"] [${HIDDEN}] { display: none !important; }
 html[data-instagram-focus-view="home"] :is(main,[role="main"]):not([${READY}]) { visibility: hidden !important; }
 html[data-instagram-focus="on"]:not([data-instagram-friends-native]) article:not([data-instagram-friends-approved]):not([data-instagram-friends-grid]) { display: none !important; }

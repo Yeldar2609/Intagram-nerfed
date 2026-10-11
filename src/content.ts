@@ -4,7 +4,6 @@ import { createFriendApi } from "./friend-api";
 import { FriendChecks } from "./friend-checks";
 import { viewerId } from "./friends";
 import { hasMediaView, installMediaGuard } from "./media";
-import { createNavigation, createSearch, updateNavigation } from "./navigation";
 import { HOME, isAuthPath, isDistractionPath, singlePostPath } from "./policy";
 import { filterSurfaces, SURFACE_CSS } from "./surfaces";
 
@@ -12,36 +11,34 @@ const ROOT = "data-instagram-focus";
 const INSTALLED = "data-instagram-focus-installed";
 function start(): void {
   if (document.documentElement.hasAttribute(INSTALLED)) return;
-  document.documentElement.setAttribute(INSTALLED, "0.3.0");
+  document.documentElement.setAttribute(INSTALLED, "0.3.1");
   const style = document.createElement("style");
-  style.textContent =
-    FILTER_CSS +
-    SURFACE_CSS +
-    `
-    html[data-instagram-focus="on"]:not([data-instagram-friends-native]) body {padding-bottom:calc(96px + env(safe-area-inset-bottom))!important}
-    html[data-instagram-friends-page] body > :not(instagram-user-search):not(script):not(style) {display:none!important}
-    html[data-instagram-friends-page] body {margin:0!important;padding:0!important;background:#101114!important;overflow:auto!important}
-    html[data-instagram-friends-page] {overflow:auto!important}
-  `;
+  style.textContent = FILTER_CSS + SURFACE_CSS;
   document.documentElement.append(style);
   let scheduled = false;
   let lockedPost: string | undefined;
-  let navigation: HTMLElement | undefined;
-  let page: HTMLElement | undefined;
-  const checks = new FriendChecks(createFriendApi(location.origin), schedule);
-  installMediaGuard(() => !!page);
+  let status: HTMLElement | undefined;
+  const checks = new FriendChecks(
+    createFriendApi(location.origin, () => document.cookie),
+    schedule,
+  );
+  installMediaGuard(() => false);
   function sync(): void {
     scheduled = false;
     const path = location.pathname;
     const auth = isAuthPath(path);
     const native = /^\/(direct|stories)(\/|$)/.test(path);
-    const special = !auth && path === HOME && location.hash === "#user-search";
-    if (isDistractionPath(path)) {
-      document.documentElement.setAttribute(ROOT, "redirecting");
-      location.replace(path.startsWith("/explore") ? "/#user-search" : HOME);
+    const search = /^\/explore(?:\/|$)/i.test(path);
+    if (path === HOME && location.hash === "#user-search") {
+      location.replace("/explore/search/");
       return;
     }
-    const media = !auth && !special && hasMediaView(document, path);
+    if (isDistractionPath(path)) {
+      document.documentElement.setAttribute(ROOT, "redirecting");
+      location.replace(HOME);
+      return;
+    }
+    const media = !auth && !search && hasMediaView(document, path);
     const post = singlePostPath(path);
     if (!media) lockedPost = undefined;
     if (media) lockedPost ??= post ?? path;
@@ -51,7 +48,7 @@ function start(): void {
       return;
     }
     const names =
-      auth || native || special
+      auth || native || search
         ? []
         : Array.from(document.querySelectorAll("article"))
             .map(articleAuthor)
@@ -63,7 +60,7 @@ function start(): void {
       names,
       Date.now(),
     );
-    if (!auth && !native && !special) void checks.tick(Date.now());
+    if (!auth && !native && !search) void checks.tick(Date.now());
     const friends = checks.snapshot(Date.now());
     document.documentElement.setAttribute(ROOT, auth ? "off" : "on");
     document.documentElement.toggleAttribute(
@@ -82,28 +79,21 @@ function start(): void {
               ? "native"
               : "other",
     );
-    document.documentElement.toggleAttribute(
-      "data-instagram-friends-page",
-      special,
-    );
-    if (page && !special) {
-      page.remove();
-      page = undefined;
+    const message = auth || native || search ? "" : checks.status(Date.now());
+    const main = document.querySelector("main,[role=main]");
+    if (message && main) {
+      if (!status?.isConnected) {
+        status = document.createElement("p");
+        status.setAttribute("data-instagram-friends-status", "");
+        status.setAttribute("role", "status");
+        main.before(status);
+      }
+      if (status.textContent !== message) status.textContent = message;
+    } else {
+      status?.remove();
+      status = undefined;
     }
-    if (document.body && special && !page) {
-      page = createSearch(document);
-      document.body.append(page);
-    }
-    if (auth || special || native) {
-      navigation?.remove();
-      navigation = undefined;
-    } else if (document.body && !navigation?.isConnected) {
-      navigation = createNavigation(document);
-      document.body.append(navigation);
-    }
-    if (navigation)
-      updateNavigation(navigation, friends, checks.status(Date.now()));
-    if (!auth && !special) {
+    if (!auth) {
       filterLinks(document);
       filterSurfaces(document, path, friends);
     }
@@ -138,7 +128,7 @@ function start(): void {
       if (url.origin === location.origin && isDistractionPath(url.pathname)) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        location.assign("/#user-search");
+        location.assign(HOME);
       }
     },
     true,

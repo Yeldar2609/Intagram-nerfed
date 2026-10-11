@@ -7,16 +7,14 @@ import {
 } from "../src/policy";
 
 describe("Instagram navigation policy", () => {
-  test.each([
-    "/explore/",
-    "/explore/search/",
-    "/reels/",
-  ])("identifies %s as a distraction route", (path) => {
+  test.each(["/reels/"])("identifies %s as a distraction route", (path) => {
     // Given a distracting Instagram route, when focus mode evaluates it, then return to Home.
     expect(shouldRedirect(path)).toBe(true);
   });
   test.each([
     "/",
+    "/explore/",
+    "/explore/search/",
     "/reel/abc/",
     "/stories/alex/123/",
     INBOX,

@@ -1,8 +1,8 @@
 # Instagram friends extension
 
-[Install / update](https://yeldar2609.github.io/Intagram-nerfed/) · v0.3.0
+[Install / update](https://yeldar2609.github.io/Intagram-nerfed/) · v0.3.1
 
-A free personal extension for Instagram's actual website. Stories and messages remain available. Posts are shown only after the author is verified as a mutual friend, or as your own account. Search opens a profile by exact username without Explore posts. No Focus button, posting mode, exports or imports.
+A free personal extension for Instagram's actual website, with its original navigation and search controls. Stories and messages remain available. Posts are shown only after the author is verified as a mutual friend, or as your own account. Native people search remains available with Explore media hidden. No custom toolbar, Focus button, posting mode, exports or imports.
 
 ## Setup
 
@@ -12,13 +12,13 @@ Follow the three short steps on the [installation page](https://yeldar2609.githu
 
 The extension reads the non-secret `ds_user_id` account identifier to isolate checks when accounts switch. The browser sends its normal session cookies directly to Instagram; the extension does not extract passwords or session tokens. It checks only authors encountered on the current page and the visited profile, using same-origin web requests. Positive and negative results expire after five minutes; native Follow/Unfollow actions trigger earlier rechecks. No follow list is downloaded or manually maintained. Results live only in this tab's memory and are cleared on account change or reload.
 
-Checks are sequential, at least three seconds apart. Rejected requests pause checks for at least a minute and respect longer Retry-After values. Unverified or expired authors remain hidden. A small status message explains pending or unavailable checks. Stories and messages remain usable while checks are unavailable.
+Author checks start sequentially, at least three seconds apart; a fallback can make additional requests within a check. Authentication, rate-limit, network and server failures pause checks for at least a minute and respect longer Retry-After values. Missing metadata for one account does not pause all authors. Unverified or expired authors remain hidden. A small inline status explains pending checks or a safe error reason/code. Stories, messages and native navigation remain usable.
 
-This uses Instagram's undocumented web endpoints, not an official personal-account API. Those endpoints can change or reject requests. The [Instaloader source at da65e69](https://github.com/instaloader/instaloader/blob/da65e697a021be94e6ae20e33145fbf488351a73/instaloader/structures.py) documents the profile endpoints and following/follow-back fields used here. The extension requires both relationship directions and a matching returned username; missing data never grants access. Authenticated Instagram compatibility has not been verified on the user's account.
+This uses Instagram's undocumented web endpoints, not an official personal-account API. v0.3.1 replaces the mobile-style own-profile lookup with a web GraphQL query, includes the session's CSRF header, and falls back to current web profile queries when legacy metadata is missing. Query IDs, variables and nested relationship fields follow [Instagrapi's pinned web implementation](https://github.com/subzeroid/instagrapi/blob/5a61562cfc87b232f2b492b03264adaa10fef65d/instagrapi/mixins/user.py#L279-L327); session headers follow its [web request helper](https://github.com/subzeroid/instagrapi/blob/5a61562cfc87b232f2b492b03264adaa10fef65d/instagrapi/mixins/public.py#L513-L577). Both directions and a matching returned identity are required. These endpoints can change or reject requests. Authenticated compatibility remains unverified on the user's account; local tests cannot establish that the reported live failure is resolved.
 
 ## Limits
 
-Instagram's page structure can change. Unknown post authors and unsupported profile grids stay hidden. Supported profile grids use a native tabpanel. This filters posts Instagram loads; it does not fetch a complete or chronological friends feed. Search requires an exact username. Checks are not instantaneous: a remote follow change may take up to five minutes plus request queue time to appear.
+Instagram's page structure can change. Unknown post authors and unsupported profile grids stay hidden. Supported profile grids use a native tabpanel. This filters posts Instagram loads; it does not fetch a complete or chronological friends feed. Checks are not instantaneous: a remote follow change may take up to five minutes plus request queue time to appear.
 
 The classic icon is the user's supplied asset. On iPhone use a Shortcuts home-screen icon opening Instagram in Safari, where Userscripts can run. Standalone installed web apps may not run Safari extensions. Independent personal project, not affiliated with Instagram / Meta.
 

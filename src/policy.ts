@@ -11,7 +11,7 @@ export function isAuthPath(path: string): boolean {
   return /^\/(accounts|challenge|checkpoint|oauth)(\/|$)/i.test(path);
 }
 export function isDistractionPath(path: string): boolean {
-  return /^\/explore(\/|$)/i.test(path) || /^\/reels?\/?$/i.test(path);
+  return /^\/reels?\/?$/i.test(path);
 }
 export function shouldRedirect(path: string): boolean {
   return isDistractionPath(path);

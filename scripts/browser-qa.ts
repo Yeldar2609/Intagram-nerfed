@@ -20,96 +20,97 @@ await browse(
 await browse("goto", base);
 await browse("viewport", "375x900");
 await check(
-  "No Focus panel or import controls",
-  "!document.querySelector('instagram-focus-controls,instagram-friends-setup,input[type=file]')",
+  "No custom toolbar, Focus, search page, or import controls",
+  "!document.querySelector('instagram-friends-nav,instagram-user-search,instagram-focus-controls,input[type=file]')",
 );
-await capture("automatic-checking");
+await check(
+  "Original navigation DOM and styles retained",
+  "document.querySelector('nav')===window.originalNavigation&&getComputedStyle(document.querySelector('#explore')).display!=='none'&&getComputedStyle(document.body).paddingBottom==='120px'",
+);
+await capture("checking");
 await eventually(
-  "Automatic session checks show only mutual posts",
+  "Missing legacy flags recovered through authenticated GraphQL",
   `!(${hidden})('friend-video')&&(${hidden})('next-video')&&(${hidden})('suggested')`,
 );
 await check(
-  "No manual friend data stored",
+  "No manual data stored",
   "localStorage.length===0&&sessionStorage.length===0",
-);
-await eventually(
-  "Own profile resolved automatically",
-  "document.querySelector('instagram-friends-nav').shadowRoot.querySelector('#profile').getAttribute('href')==='/me/'",
 );
 await capture("home");
 await browse("js", "document.cookie='ds_user_id=99;path=/'");
 await eventually(
-  "Account switch clears prior approvals",
-  `(${hidden})('friend-video')&&document.querySelector('instagram-friends-nav').shadowRoot.querySelector('#profile').getAttribute('href')!=='/me/'`,
+  "Account switch clears mutual approval",
+  `(${hidden})('friend-video')`,
 );
 await capture("account-switched");
-await browse("js", "document.cookie='ds_user_id=1;path=/'");
-await browse("goto", `${base}/#user-search`);
+await browse(
+  "js",
+  "document.cookie='ds_user_id=1;path=/';document.cookie='qa_mode=owner-unsupported;path=/'",
+);
+await browse("goto", base);
+await eventually(
+  "Unavailable owner does not stop successful author checks",
+  `!(${hidden})('friend-video')`,
+);
+await capture("owner-unavailable-recovered");
+await browse("js", "document.cookie='qa_mode=ok;path=/'");
+await browse("click", "#explore");
 for (const width of [375, 768, 1280]) {
   await browse("viewport", `${width}x900`);
   await check(
-    `Search reflows at ${width}`,
-    "document.documentElement.scrollWidth<=innerWidth",
+    `Native search visible at ${width} without Explore posts`,
+    `location.pathname==='/explore/'&&!(${hidden})('person-result')&&(${hidden})('friend-video')&&(${hidden})('next-video')&&document.documentElement.scrollWidth<=innerWidth`,
   );
   await capture(`search-${width}`);
 }
 await browse("viewport", "375x900");
-await browse("fill", "instagram-user-search input", "https://wrong");
-await browse("click", "instagram-user-search button");
-await check(
-  "Search rejects URLs",
-  "location.hash==='#user-search'&&document.querySelector('instagram-user-search').shadowRoot.querySelector('#error').textContent.length>0",
-);
-await capture("search-error");
-await browse("fill", "instagram-user-search input", "@friend");
-await browse("click", "instagram-user-search button");
+await browse("fill", "#native-search", "friend");
+await browse("click", "#person-result");
 await eventually(
-  "Mutual profile opens automatically without import",
+  "Search result opens mutual profile without import",
   `location.pathname==='/friend/'&&!(${hidden})('grid-post')&&(${hidden})('profile-recommended')`,
 );
 await capture("profile-friend");
 await browse("js", "document.cookie='qa_follow=off;path=/'");
 await browse("click", "#follow");
 await eventually(
-  "Follow change automatically revokes post approval",
+  "Native Follow change revokes approval",
   `(${hidden})('grid-post')`,
 );
 await capture("profile-follow-change");
 await browse("js", "document.cookie='qa_follow=on;path=/'");
-await browse("goto", `${base}/me/`);
-await eventually("Own profile grid visible", `!(${hidden})('grid-post')`);
+await browse("click", "#profile");
+await eventually(
+  "Own profile accessible from original button",
+  `!(${hidden})('grid-post')`,
+);
 await capture("profile-own");
 await browse("goto", `${base}/stranger/`);
 await eventually(
-  "Nonmutual profile keeps Follow and hides posts",
+  "Nonmutual profile retains Follow but hides posts",
   `!(${hidden})('follow')&&(${hidden})('grid-post')`,
 );
 await capture("profile-stranger");
-await browse("goto", `${base}/explore/`);
-await browse("wait", "instagram-user-search");
+await browse("click", "#inbox");
 await check(
-  "Explore goes to username search without media",
-  "location.hash==='#user-search'&&getComputedStyle(document.querySelector('main')).display==='none'",
+  "Messages keep native composer",
+  "location.pathname==='/direct/inbox/'&&getComputedStyle(document.querySelector('#composer')).display!=='none'",
 );
-await browse("goto", `${base}/direct/inbox/`);
-await check(
-  "Messages retain native controls without overlapping navigation",
-  "!document.querySelector('instagram-friends-nav')&&getComputedStyle(document.querySelector('#composer')).display!=='none'",
-);
-await browse("goto", base);
+await capture("messages");
 await browse("js", "document.cookie='qa_mode=blocked;path=/'");
 await browse("goto", base);
 await eventually(
-  "Rejected Instagram requests leave posts hidden and show status",
-  `(${hidden})('friend-video')&&document.querySelector('instagram-friends-nav').shadowRoot.querySelector('#status').textContent.includes('unavailable')`,
+  "Rate limit explained without adding toolbar",
+  `(${hidden})('friend-video')&&document.querySelector('[data-instagram-friends-status]')?.textContent.includes('(429)')`,
 );
-await capture("automatic-unavailable");
+await capture("rate-limited");
 await browse("js", "document.cookie='qa_mode=ok;path=/'");
 await browse("goto", `${base}/accounts/login/`);
 await check(
-  "Login remains untouched",
-  "document.documentElement.getAttribute('data-instagram-focus')==='off'&&!document.querySelector('instagram-friends-nav')",
+  "Login untouched",
+  "document.documentElement.getAttribute('data-instagram-focus')==='off'&&!document.querySelector('[data-instagram-friends-status]')",
 );
+await capture("login");
 for (const width of [375, 768, 1280]) {
   await browse("goto", "http://127.0.0.1:4173/");
   await browse("viewport", `${width}x900`);
@@ -131,7 +132,7 @@ await writeFile(
     {
       passed: true,
       scope:
-        "Compiled production script with real HTTP adapter against a local Instagram response fixture. Not a signed-in Instagram or iPhone test.",
+        "Production script and HTTP adapter against synthetic legacy-missing-flags, GraphQL, owner-failure and rate-limit fixtures. Native fixture controls preserved. Not authenticated Instagram or physical iPhone verification.",
       time: new Date().toISOString(),
     },
     null,

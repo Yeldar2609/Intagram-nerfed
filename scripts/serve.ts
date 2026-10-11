@@ -34,8 +34,8 @@ console.info(`Local QA server: ${server.url}`);
 const fixtureServer = Bun.serve({
   hostname: "127.0.0.1",
   port: 4174,
-  fetch(request) {
-    const api = fixtureApi(request);
+  async fetch(request) {
+    const api = await fixtureApi(request);
     if (api) return api;
     return new Response(
       Bun.file(

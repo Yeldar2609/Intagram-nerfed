@@ -14,7 +14,7 @@ export class FriendChecks {
   private next = 0;
   private ownerNext = 0;
   private pausedUntil = 0;
-  private failed = false;
+  private failure: string | undefined;
   constructor(
     private readonly api: FriendApi,
     private readonly changed: () => void,
@@ -35,7 +35,7 @@ export class FriendChecks {
       this.next = now;
       this.ownerNext = now;
       this.pausedUntil = 0;
-      this.failed = false;
+      this.failure = undefined;
     }
     this.names = [...new Set(names)];
   }
@@ -52,8 +52,8 @@ export class FriendChecks {
   }
   status(now: number): string {
     if (!this.viewer) return "Sign in to Instagram to check mutual friends.";
-    if (this.pausedUntil > now || this.failed)
-      return "Friend checks unavailable. Retrying automatically.";
+    if (this.failure)
+      return `Posts waiting for verification: ${this.failure}. Stories, messages and search still work. Retrying automatically.`;
     if (
       this.busy ||
       this.names.some(
@@ -87,7 +87,7 @@ export class FriendChecks {
         if (signal.aborted) return;
         this.owner = owner;
         this.ownerUntil = now + TTL;
-        this.failed = false;
+        this.failure = undefined;
         this.ownerNext = now + TTL;
       } else if (name) {
         const result = await this.api.relationship(name, signal);
@@ -97,13 +97,13 @@ export class FriendChecks {
           this.ownerUntil = now + TTL;
         }
         this.cache.set(name, { mutual: result.mutual, until: now + TTL });
-        this.failed = false;
+        this.failure = undefined;
       }
     } catch (error) {
       if (signal.aborted) return;
       if (!(error instanceof CheckUnavailable)) throw error;
-      this.pausedUntil = now + error.retryMs + 8000;
-      this.failed = true;
+      if (error.pauseAll) this.pausedUntil = now + error.retryMs + 8000;
+      this.failure = error.reason;
       if (ownerDue) this.ownerNext = now + TTL;
       else {
         if (name)
