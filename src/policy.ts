@@ -13,6 +13,6 @@ export function isAuthPath(path: string): boolean {
 export function isDistractionPath(path: string): boolean {
   return /^\/explore(\/|$)/i.test(path) || /^\/reels?\/?$/i.test(path);
 }
-export function shouldRedirect(path: string, posting: boolean): boolean {
-  return !posting && isDistractionPath(path);
+export function shouldRedirect(path: string): boolean {
+  return isDistractionPath(path);
 }

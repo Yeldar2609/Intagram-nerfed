@@ -1,31 +1,20 @@
-# Instagram focus design
+# Design contract — v0.3.0
 
-## 1. Atmosphere & Identity
-Keep Instagram's real inbox intact. The supplied screenshots establish dark neutral surfaces, compact controls, and a blue primary action. Do not fabricate chat data or recreate the inbox. The requested classic Instagram icon is used at the user's direction; the installation page identifies this as an independent extension. This is an operational extension, not a marketing-site redesign.
+Keep the real Instagram interface. No fabricated inbox, feed or login. The supplied classic icon remains the only image asset on the installation page. Dark neutral surfaces and blue actions follow shared tokens in src/tokens.ts.
 
-## 2. Color
-Dark background #101114; raised surface #202126; border #42444c; primary text #f5f5f7; secondary #b9bbc4; blue action #1769e8 (white label); hover #1255bd; focus #86bcff. Icon colors come from the user-supplied PNG asset. No decorative gradients beyond that asset.
+## Tokens and layout
 
-Shared implementation tokens live in `src/tokens.ts`: included in the shadow-root stylesheet and emitted as the installation site's `tokens.css`. Spacing, typography, radii, focus, elevation and motion use these same variables on both surfaces.
+Background #101114; surface #202126; text #f5f5f7; muted #b9bbc4; border #42444c; primary #1769e8; hover #1255bd; focus #86bcff. System font, body 16px/1.6, labels 14px, heading 24px. Spacing 4/8/12/16/24/32/48px. Content width 760px; padding 24px mobile, site desktop 48px. 12px controls, 44px minimum targets, 3px focus outlines.
 
-## 3. Typography
-Native system UI stack (-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif). Body 16px/1.6, label 14px/1.4, page heading responsive 32–48px/1.15, section heading 24px/1.3. Use native UI typography to blend with the user's inbox.
+## Components
 
-## 4. Spacing & Layout
-4px base with 8/12/16/24/32/48px steps. Site max width 760px; mobile padding 24px, desktop 48px. Controls min-height 44px. Extension launcher fixed right 16px, bottom calc(80px + safe-area-inset-bottom); narrow settings panel width min(320px, viewport minus 32px). No full-page overlay, conversation scrolling stays unchanged except while a video dialog is open. Root feed stays hidden during route redirection.
+- Remove Focus and posting mode completely. No import/export controls.
+- On Home and profiles, a compact bottom navigation has Home, Messages, Search and Profile. Safe-area padding protects iPhone controls. The bar is absent in stories and messages to avoid covering native controls. Body has bottom clearance.
+- Profile becomes available when the signed-in account is resolved. A small live status reports automatic checks or temporary failure. No approval prompts or recurring manual setup.
+- Search is a full-page shadow DOM surface at /#user-search with a Back link. It accepts an exact username and opens the native profile; no results grid or Explore content. Underlying content is hidden while open.
+- Installation stays three short steps, then collapsed Home Screen/help/desktop instructions. Classic icon and concise text.
+- No decorative motion. Hover/focus/active states use shared tokens. Keyboard form submission, native validation and readable error feedback.
 
-## 5. Components
-- Action link/button: 12px radius, primary blue or secondary dark. Hover color, active opacity, visible 3px focus outline, disabled native state. Real links for downloads and navigation.
-- Focus launcher: 44px pill, text label, expanded ARIA state, opens a shadow-root panel. Kept separate from Instagram's DOM styling. Hidden on authentication routes.
-- Focus panel: heading, current mode, Stories action, Messages action, Posting mode action, close button. Keyboard Escape closes and returns focus. No focus trap because the panel is nonmodal. Posting mode clearly exposes Instagram's regular site temporarily. No automatic publishing.
-- Installation section: three short, always-visible iPhone steps with one primary install/update action. Keep the classic icon and existing colors. Home-screen setup, update/help, and desktop instructions use native details/summary disclosures, closed initially. Summaries have at least 44px targets, visible focus, native keyboard behavior, and open/closed indicators. All instructions work without JavaScript.
-- Primitive harness: test fixture exposes launcher open/closed and focus/posting states; real screenshots at 375/768/1280px before release.
+## Verification limits
 
-## 6. Motion & Interaction
-No decorative motion. 120ms opacity feedback on buttons; reduced-motion disables transitions. Settings panel uses the native hidden state. Route filtering handles SPA navigation and DOM changes. User can always return to Messages, disable the extension, or remove the userscript.
-
-## 7. Depth & Surface
-One raised panel with 1px border and 0 8px 24px #0006 shadow. No nested cards. Site uses rules between instructional sections. Native Instagram layout is not restyled.
-
-## 8. Accessibility Constraints & Accepted Debt
-AA text contrast, visible focus, semantic buttons and headings, 44px controls, reflow at 375px, readable at 200% zoom. Persona: iPhone user seeking real conversations with fewer distractions; secondary: desktop keyboard user installing a local extension. Unverified items are test gaps, not accepted product debt: real iPhone extension execution, authenticated Instagram UI and story availability. Do not claim these pass without evidence.
+Capture search/site at 375/768/1280px, plus search error, automatic pending/unavailable states, Home and mutual/own/nonmutual profiles in the local fixture. This proves local UI and adapter behavior, not authenticated Instagram or physical iPhone execution. Unknown authors/grids stay hidden.

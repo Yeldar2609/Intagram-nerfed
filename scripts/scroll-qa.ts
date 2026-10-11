@@ -26,15 +26,20 @@ async function check(name: string, expression: string): Promise<void> {
 }
 async function visit(path: string): Promise<void> {
   await browse("goto", `http://127.0.0.1:4174${path}`);
-  await browse("wait", "instagram-focus-controls");
+  await browse("wait", "html[data-instagram-focus=on]");
+  if (path.startsWith("/p/") || path.startsWith("/reel/"))
+    await browse("wait", "#friend-video[data-instagram-friends-approved]");
 }
 const hidden = "e=>!!e.closest('[data-instagram-focus-surface-hidden]')";
 await visit("/");
-await browse("js", "sessionStorage.clear()");
+await browse(
+  "js",
+  "sessionStorage.clear();document.cookie='ds_user_id=1;path=/';document.cookie='qa_mode=ok;path=/'",
+);
 await visit("/");
 await check(
-  "Home preserves friends stories and hides feed and recommendations",
-  `!(${hidden})(document.querySelector('#story')) && ['friend-video','next-video','suggested'].every(id=>(${hidden})(document.getElementById(id))) && location.pathname==='/'`,
+  "Home preserves stories and hides nonmutual recommendations",
+  `!(${hidden})(document.querySelector('#story')) && ['next-video','suggested'].every(id=>(${hidden})(document.getElementById(id))) && location.pathname==='/'`,
 );
 await browse(
   "js",
@@ -101,7 +106,7 @@ await check(
   "(()=>{const e=new Event('touchmove',{bubbles:true,cancelable:true});document.querySelector('#video-modal').dispatchEvent(e);return e.defaultPrevented && location.pathname==='/direct/t/friend/' && getComputedStyle(document.querySelector('#extra-video')).display==='none'})()",
 );
 await browse("js", "document.querySelector('#video-modal').remove()");
-await browse("wait", "html[data-instagram-focus-view=other]");
+await browse("wait", "html[data-instagram-focus-view=native]");
 await check(
   "Closing the video restores conversation scrolling",
   "(()=>{const e=new WheelEvent('wheel',{bubbles:true,cancelable:true});document.body.dispatchEvent(e);return !e.defaultPrevented})()",
@@ -129,10 +134,13 @@ await browse(
 );
 await visit("/p/friend/");
 await check(
-  "Explicit posting mode releases media scroll protection",
-  "(()=>{const e=new WheelEvent('wheel',{bubbles:true,cancelable:true});document.body.dispatchEvent(e);return !e.defaultPrevented && document.documentElement.getAttribute('data-instagram-focus')==='off'})()",
+  "Legacy posting flag cannot disable protection",
+  "(()=>{const e=new WheelEvent('wheel',{bubbles:true,cancelable:true});document.body.dispatchEvent(e);return e.defaultPrevented && document.documentElement.getAttribute('data-instagram-focus')==='on'})()",
 );
-await browse("js", "sessionStorage.clear()");
+await browse(
+  "js",
+  "sessionStorage.clear();document.cookie='ds_user_id=1;path=/';document.cookie='qa_mode=ok;path=/'",
+);
 await visit("/");
 await browse("viewport", "375x900");
 await mkdir("work/qa", { recursive: true });

@@ -20,8 +20,8 @@ await writeFile("dist/extension/content.js", code);
 const metadata = `// ==UserScript==
 // @name         Instagram — just messages
 // @namespace    https://github.com/Yeldar2609/Intagram-nerfed
-// @version      0.2.0
-// @description  Stories and messages without feed posts or endless video scrolling. Optional posting mode.
+// @version      0.3.0
+// @description  Stories, messages, mutual friends and username search. No endless video scrolling.
 // @match        https://www.instagram.com/*
 // @match        https://instagram.com/*
 // @run-at       document-start
@@ -59,7 +59,7 @@ await writeFile(
     {
       manifest_version: 3,
       name: "Instagram — just messages",
-      version: "0.2.0",
+      version: "0.3.0",
       description:
         "A personal focus extension. Stories and messages without endless scrolling. Independent of Meta.",
       icons: { "48": "icons/icon-48.png", "128": "icons/icon-128.png" },

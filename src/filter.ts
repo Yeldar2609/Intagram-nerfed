@@ -11,7 +11,7 @@ type LinkDocument = {
   readonly baseURI: string;
   readonly links: Iterable<FilterLink>;
 };
-export function filterLinks(doc: LinkDocument, posting: boolean): void {
+export function filterLinks(doc: LinkDocument): void {
   for (const link of doc.links) {
     const href = link.getAttribute("href");
     if (href === null) continue;
@@ -23,7 +23,6 @@ export function filterLinks(doc: LinkDocument, posting: boolean): void {
       throw error;
     }
     const hide =
-      !posting &&
       url.origin === new URL(doc.baseURI).origin &&
       isDistractionPath(url.pathname);
     if (hide && !link.hasAttribute(HIDDEN)) link.setAttribute(HIDDEN, "");

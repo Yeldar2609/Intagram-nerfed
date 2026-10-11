@@ -1,4 +1,5 @@
 import { resolve, sep } from "node:path";
+import { fixtureApi } from "./fixture-api";
 
 const root = resolve("dist/site");
 const fixture = resolve("tests/fixture.html");
@@ -34,12 +35,19 @@ const fixtureServer = Bun.serve({
   hostname: "127.0.0.1",
   port: 4174,
   fetch(request) {
+    const api = fixtureApi(request);
+    if (api) return api;
     return new Response(
       Bun.file(
         new URL(request.url).pathname === "/test-content.js"
           ? "dist/extension/content.js"
           : fixture,
       ),
+      {
+        headers: request.headers.get("cookie")?.includes("ds_user_id=")
+          ? {}
+          : { "Set-Cookie": "ds_user_id=1; Path=/; SameSite=Lax" },
+      },
     );
   },
 });

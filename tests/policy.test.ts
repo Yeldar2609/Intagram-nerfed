@@ -11,9 +11,9 @@ describe("Instagram navigation policy", () => {
     "/explore/",
     "/explore/search/",
     "/reels/",
-  ])("redirects %s to Home in focus mode", (path) => {
+  ])("identifies %s as a distraction route", (path) => {
     // Given a distracting Instagram route, when focus mode evaluates it, then return to Home.
-    expect(shouldRedirect(path, false)).toBe(true);
+    expect(shouldRedirect(path)).toBe(true);
   });
   test.each([
     "/",
@@ -27,11 +27,11 @@ describe("Instagram navigation policy", () => {
     "/p/shared/",
   ])("preserves %s", (path) => {
     // Given a message, login, or shared post route, when evaluated, then preserve it.
-    expect(shouldRedirect(path, false)).toBe(false);
+    expect(shouldRedirect(path)).toBe(false);
   });
-  test("allows posting mode to reach the native site", () => {
-    // Given posting mode, when home is requested, then do not redirect.
-    expect(shouldRedirect("/", true)).toBe(false);
+  test("preserves Home", () => {
+    // Given Home, preserve the route so stories and mutual posts can render.
+    expect(shouldRedirect("/")).toBe(false);
   });
   test("distinguishes usernames from reserved route names", () => {
     // Given a similar profile name, when classified, then do not treat it as Explore.

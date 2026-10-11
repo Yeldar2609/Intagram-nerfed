@@ -1,6 +1,6 @@
 {
   "name": "intagram-nerfed",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -18,5 +18,9 @@
     "sharp": "0.34.5",
     "typescript": "5.9.3",
     "vitest": "3.2.4"
+  },
+  "dependencies": {
+    "ky": "^1.14.3",
+    "zod": "^4.6.5"
   }
 }

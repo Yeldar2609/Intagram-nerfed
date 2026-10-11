@@ -7,6 +7,13 @@ settings:
 importers:
 
   .:
+    dependencies:
+      ky:
+        specifier: ^1.14.3
+        version: 1.14.3
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@biomejs/biome':
         specifier: 2.4.8
@@ -647,6 +654,10 @@ packages:
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
 
+  ky@1.14.3:
+    resolution: {integrity: sha512-9zy9lkjac+TR1c2tG+mkNSVlyOpInnWdSMiue4F+kq8TwJSgv6o8jhLRg8Ho6SnZ9wOYUq/yozts9qQCfk7bIw==}
+    engines: {node: '>=18'}
+
   loupe@3.2.1:
     resolution: {integrity: sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==}
 
@@ -835,6 +846,9 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+
+  zod@4.6.5:
+    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
 snapshots:
 
@@ -1289,6 +1303,8 @@ snapshots:
 
   js-tokens@9.0.1: {}
 
+  ky@1.14.3: {}
+
   loupe@3.2.1: {}
 
   magic-string@0.30.21:
@@ -1495,3 +1511,5 @@ snapshots:
       stackback: 0.0.2
 
   ws@8.22.0: {}
+
+  zod@4.6.5: {}

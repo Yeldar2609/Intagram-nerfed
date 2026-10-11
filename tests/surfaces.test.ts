@@ -18,7 +18,7 @@ test("keeps native story links but hides posts and suggested content on Home", (
   document.body.innerHTML =
     '<nav>Messages</nav><main><div><div id="stories"><a id="friend" href="/stories/friend/123/">Friend</a></div><article id="post">Post</article></div><section id="suggested">Suggested videos</section></main>';
   // When Home is filtered.
-  filterSurfaces(document, "/", false);
+  filterSurfaces(document, "/", undefined);
   // Then stories and navigation survive, while both feed formats hide.
   expect(hidden("#friend")).toBe(false);
   expect(hidden("nav")).toBe(false);
@@ -29,29 +29,28 @@ test("keeps native story links but hides posts and suggested content on Home", (
 test("supports story buttons and filters newly inserted feed content", () => {
   document.body.innerHTML =
     '<main><button aria-label="Friend story">Friend</button><div id="feed">Feed</div></main>';
-  filterSurfaces(document, "/", false);
+  filterSurfaces(document, "/", undefined);
   document
     .querySelector("main")
     ?.insertAdjacentHTML("beforeend", '<article id="new">New post</article>');
-  filterSurfaces(document, "/", false);
+  filterSurfaces(document, "/", undefined);
   expect(hidden("button")).toBe(false);
   expect(hidden("#new")).toBe(true);
 });
 
 test("hides the Home feed while the story tray has not loaded", () => {
   document.body.innerHTML = '<main><article id="post">Post</article></main>';
-  filterSurfaces(document, "/", false);
+  filterSurfaces(document, "/", undefined);
   expect(hidden("#post")).toBe(true);
 });
 
-test("restores native content on stories, messages and posting mode", () => {
+test("restores native content on stories, messages and native routes", () => {
   document.body.innerHTML = '<main><article id="post">Post</article></main>';
   for (const [path, posting] of [
-    ["/stories/friend/123/", false],
-    ["/direct/inbox/", false],
-    ["/", true],
+    ["/stories/friend/123/", undefined],
+    ["/direct/inbox/", undefined],
   ] as const) {
-    filterSurfaces(document, "/", false);
+    filterSurfaces(document, "/", undefined);
     filterSurfaces(document, path, posting);
     expect(hidden("#post")).toBe(false);
   }
@@ -59,8 +58,11 @@ test("restores native content on stories, messages and posting mode", () => {
 
 test("preserves only the opened post and hides routes to other videos", () => {
   document.body.innerHTML =
-    '<main><article id="current"><a href="/p/friend/">Current</a><video></video><button id="carousel" aria-label="Next">Next photo</button></article><article id="next"><a href="/reel/next/">Next</a></article><a id="recommendation" href="/p/third/">More</a><button id="next-reel" aria-label="Next reel">Next</button></main>';
-  filterSurfaces(document, "/p/friend/", false);
+    '<main><article id="current"><header><a href="/friend/">friend</a></header><a href="/p/friend/">Current</a><video></video><button id="carousel" aria-label="Next">Next photo</button></article><article id="next"><a href="/reel/next/">Next</a></article><a id="recommendation" href="/p/third/">More</a><button id="next-reel" aria-label="Next reel">Next</button></main>';
+  filterSurfaces(document, "/p/friend/", {
+    owner: "me",
+    mutuals: ["friend"],
+  });
   expect(hidden("#current")).toBe(false);
   expect(hidden("#next")).toBe(true);
   expect(hidden("#recommendation")).toBe(true);
@@ -70,8 +72,11 @@ test("preserves only the opened post and hides routes to other videos", () => {
 
 test("keeps the requested video even when another article precedes it", () => {
   document.body.innerHTML =
-    '<main><article><a href="/p/other/">Other</a><video id="other"></video></article><article><a href="/p/friend/">Friend</a><video id="friend"></video><video id="carousel-video"></video></article></main>';
-  filterSurfaces(document, "/p/friend/", false);
+    '<main><article><a href="/p/other/">Other</a><video id="other"></video></article><article><header><a href="/friend/">friend</a></header><a href="/p/friend/">Friend</a><video id="friend"></video><video id="carousel-video"></video></article></main>';
+  filterSurfaces(document, "/p/friend/", {
+    owner: "me",
+    mutuals: ["friend"],
+  });
   expect(hidden("#other")).toBe(true);
   expect(hidden("#friend")).toBe(false);
   expect(hidden("#carousel-video")).toBe(false);

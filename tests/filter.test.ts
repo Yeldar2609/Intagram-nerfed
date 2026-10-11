@@ -7,7 +7,7 @@ test("hides distraction links while preserving messages and external URLs", () =
   const window = new Window({ url: "https://www.instagram.com/direct/inbox/" });
   window.document.body.innerHTML =
     '<a id="home" href="/">Home</a><a id="explore" href="/explore/">Explore</a><a id="dm" href="/direct/t/123/">DM</a><a id="external" href="https://example.com/reels/">External</a>';
-  filterLinks(window.document, false);
+  filterLinks(window.document);
   expect(window.document.querySelector("#home")?.hasAttribute(HIDDEN)).toBe(
     false,
   );
@@ -22,11 +22,11 @@ test("hides distraction links while preserving messages and external URLs", () =
   );
 });
 
-test("restores hidden links when posting mode is enabled", () => {
-  // Given a previously hidden anchor, when posting mode filters, then its original visibility returns.
+test("retains hidden distraction links on repeated filtering", () => {
+  // Given a hidden distraction, repeated filtering must keep it hidden.
   const window = new Window({ url: "https://www.instagram.com/" });
   window.document.body.innerHTML =
     '<a href="/reels/" data-instagram-focus-hidden>Reels</a>';
-  filterLinks(window.document, true);
-  expect(window.document.querySelector("a")?.hasAttribute(HIDDEN)).toBe(false);
+  filterLinks(window.document);
+  expect(window.document.querySelector("a")?.hasAttribute(HIDDEN)).toBe(true);
 });

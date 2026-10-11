@@ -27,9 +27,9 @@ export function selectedMediaItem(doc: Document, path: string): Element | null {
   );
 }
 
-export function installMediaGuard(isPosting: () => boolean): void {
+export function installMediaGuard(isSetupOpen: () => boolean): void {
   const active = () =>
-    !isPosting() &&
+    !isSetupOpen() &&
     !isAuthPath(location.pathname) &&
     hasMediaView(document, location.pathname);
   const block = (event: Event) => {
@@ -108,7 +108,17 @@ export function installMediaGuard(isPosting: () => boolean): void {
   window.addEventListener(
     "play",
     (event) => {
-      if (!active() || !(event.target instanceof HTMLVideoElement)) return;
+      if (!(event.target instanceof HTMLVideoElement)) return;
+      if (
+        document.documentElement.getAttribute("data-instagram-focus") ===
+          "on" &&
+        event.target.closest("[data-instagram-focus-surface-hidden]")
+      ) {
+        event.target.pause();
+        event.stopImmediatePropagation();
+        return;
+      }
+      if (!active()) return;
       const selected = selectedMediaItem(document, location.pathname);
       if (selected && !selected.contains(event.target)) {
         event.target.pause();

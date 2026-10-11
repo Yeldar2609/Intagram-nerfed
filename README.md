@@ -1,56 +1,29 @@
-# Instagram — stories and messages
+# Instagram friends extension
 
-A free focus extension for Instagram's real website. Use your existing Personal account; sign in directly on Instagram.
+[Install / update](https://yeldar2609.github.io/Intagram-nerfed/) · v0.3.0
 
-**Install:** https://yeldar2609.github.io/Intagram-nerfed/
+A free personal extension for Instagram's actual website. Stories and messages remain available. Posts are shown only after the author is verified as a mutual friend, or as your own account. Search opens a profile by exact username without Explore posts. No Focus button, posting mode, exports or imports.
 
-## What it does
+## Setup
 
-- Home retains native friend-story controls and hides feed posts and recommendations. Explore and the Reels feed redirect to Home.
-- Shared Reels open as single posts. Video views block wheel, touch scrolling, scroll keys, and advancement to another media route; message video dialogs are covered too.
-- Keeps Instagram's native conversations and account/security pages.
-- Offers manual **Posting mode** to restore Instagram's regular navigation and Create controls. **Back to stories** or **Back to messages** restores filtering. No timers or daily limits.
-- Includes the classic Instagram icon and instructions for a home-screen shortcut named **Instagram**.
+Follow the three short steps on the [installation page](https://yeldar2609.github.io/Intagram-nerfed/), then sign in on Instagram. Friend checks run automatically in that session. Keep only one script copy enabled and close old tabs after updating.
 
-Story uploading works only where Instagram itself supports it on the web. This extension does not add an unsupported publishing API. Shared video links remain available in focus mode. Close a video to restore conversation scrolling. Profile pages and ordinary shared posts are preserved. This is a distraction filter, not a security restriction.
+## Automatic checks
 
-## iPhone installation
+The extension reads the non-secret `ds_user_id` account identifier to isolate checks when accounts switch. The browser sends its normal session cookies directly to Instagram; the extension does not extract passwords or session tokens. It checks only authors encountered on the current page and the visited profile, using same-origin web requests. Positive and negative results expire after five minutes; native Follow/Unfollow actions trigger earlier rechecks. No follow list is downloaded or manually maintained. Results live only in this tab's memory and are cleared on account change or reload.
 
-Use the free, open-source [Userscripts Safari extension](https://github.com/quoid/userscripts). Install the `.user.js` file from the installation page, allow it on instagram.com, then refresh Instagram. No Apple developer account or custom native app is required.
+Checks are sequential, at least three seconds apart. Rejected requests pause checks for at least a minute and respect longer Retry-After values. Unverified or expired authors remain hidden. A small status message explains pending or unavailable checks. Stories and messages remain usable while checks are unavailable.
 
-For the home-screen icon, use Apple Shortcuts to open `https://www.instagram.com/` in Safari, and choose the provided classic icon. **Standalone home-screen web apps are not the supported execution context:** they may not run Safari extensions. The shortcut opens Safari and its browser chrome remains visible. Set Safari as your default browser.
+This uses Instagram's undocumented web endpoints, not an official personal-account API. Those endpoints can change or reject requests. The [Instaloader source at da65e69](https://github.com/instaloader/instaloader/blob/da65e697a021be94e6ae20e33145fbf488351a73/instaloader/structures.py) documents the profile endpoints and following/follow-back fields used here. The extension requires both relationship directions and a matching returned username; missing data never grants access. Authenticated Instagram compatibility has not been verified on the user's account.
 
-For v0.2.0, replace the installed script (keep only one copy enabled), close old Instagram tabs, and reopen Home. Update existing Shortcuts URLs to https://www.instagram.com/. The Focus panel displays v0.2.0. The installation page has the complete steps and downloadable icon. Check for the **Focus** button on Instagram to confirm that the script is running.
+## Limits
 
-## Desktop
+Instagram's page structure can change. Unknown post authors and unsupported profile grids stay hidden. Supported profile grids use a native tabpanel. This filters posts Instagram loads; it does not fetch a complete or chronological friends feed. Search requires an exact username. Checks are not instantaneous: a remote follow change may take up to five minutes plus request queue time to appear.
 
-Download the extension ZIP from the installation page. Unzip it, enable Developer mode in Chrome/Edge's Extensions page, and choose **Load unpacked** on the folder containing `manifest.json`. Safari on Mac can use Userscripts.
+The classic icon is the user's supplied asset. On iPhone use a Shortcuts home-screen icon opening Instagram in Safari, where Userscripts can run. Standalone installed web apps may not run Safari extensions. Independent personal project, not affiliated with Instagram / Meta.
 
-## Privacy
+## Development
 
-No backend, analytics, API keys, password form, message scraping, or cookie access. The script changes navigation and visibility on Instagram. One boolean posting-mode preference is stored in the current tab's Instagram session storage. It remains active until you choose Back to stories or Back to messages or end that tab session; browser session restoration may preserve it. Removing the extension restores Instagram's normal interface.
+`pnpm install`, `pnpm typecheck`, `pnpm check`, `pnpm test`, `pnpm build`.
 
-The site uses GitHub Pages, and Instagram and GitHub have their own privacy policies. Instagram's name and icon are used at the owner's request for this independent personal project. It is not affiliated with Instagram, Meta, or Konvo.
-
-## Develop
-
-Requires Node 22, pnpm 10, and Bun 1.3.14.
-
-```sh
-pnpm install --frozen-lockfile
-pnpm typecheck
-pnpm check
-pnpm test
-pnpm build
-pnpm serve
-```
-
-Build output: `dist/extension` (Manifest V3 extension), `dist/site` (installation site, userscript, icon and extension ZIP). GitHub Actions tests and deploys `dist/site` to Pages on pushes to main.
-
-The local server exposes the installation site on port 4173 and a synthetic extension test fixture on port 4174. The fixture is never deployed. With gstack browse installed, set `BROWSE_BIN` to its executable and run `bun scripts/browser-qa.ts` and `bun scripts/scroll-qa.ts` for repeatable browser checks and screenshots under ignored `work/qa`.
-
-## Verification limits
-
-See [QA evidence](docs/qa.md). Local tests do not establish that a private account can send messages or post a story, or that a physical iPhone runs the extension correctly. Those require a signed-in device check. No personal account has been accessed or message sent during development.
-
-[Design contract](DESIGN.md) · [Requirements](docs/requirements.md) · [Icon attribution](assets/ATTRIBUTION.md)
+`pnpm serve` starts the installation page at port 4173 and a synthetic Instagram/HTTP fixture at 4174. With `BROWSE_BIN` pointing to gstack browse, run `bun scripts/browser-qa.ts` and `bun scripts/scroll-qa.ts`. The fixture uses synthetic relationships; it is never deployed. These tests do not replace signed-in Instagram or physical iPhone verification.

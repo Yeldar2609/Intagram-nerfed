@@ -1,165 +1,140 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { writeFile } from "node:fs/promises";
+import { browse, capture, check, evidence } from "./qa-browser";
 
-const browser = process.env["BROWSE_BIN"] ?? "";
-if (!browser)
-  throw new TypeError("Set BROWSE_BIN to your gstack browse executable");
-const evidence = resolve("work/qa");
-await mkdir(evidence, { recursive: true });
-const checks: string[] = [];
-async function browse(...args: string[]): Promise<string> {
-  const child = Bun.spawn([browser, ...args], {
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  const [output, errors, exit] = await Promise.all([
-    new Response(child.stdout).text(),
-    new Response(child.stderr).text(),
-    child.exited,
-  ]);
-  if (exit !== 0)
-    throw new AggregateError([output, errors], `browse ${args[0]} failed`);
-  return output.trim();
-}
-async function check(name: string, expression: string): Promise<void> {
-  const result = await browse("js", expression);
-  if (result !== "true") throw new TypeError(`${name}: ${result}`);
-  checks.push(name);
-  console.info(`PASS ${name}`);
-}
-async function waitForPath(path: string): Promise<void> {
-  const deadline = Date.now() + 5000;
-  while (Date.now() < deadline) {
-    if ((await browse("url")) === `http://127.0.0.1:4174${path}`) {
-      await browse("wait", "instagram-focus-controls");
-      return;
-    }
-    await Bun.sleep(100);
+const base = "http://127.0.0.1:4174";
+const hidden =
+  "id=>{const e=document.getElementById(id);return !!e&&!!e.closest('[data-instagram-focus-surface-hidden]')}";
+async function eventually(name: string, expression: string): Promise<void> {
+  const until = Date.now() + 15000;
+  while ((await browse("js", expression)) !== "true") {
+    if (Date.now() > until) throw new TypeError(`Timed out: ${name}`);
+    await Bun.sleep(150);
   }
-  throw new TypeError(`Navigation did not reach ${path}`);
+  await check(name, expression);
 }
-async function capturePage(path: string): Promise<void> {
-  const params = await browse(
-    "js",
-    "JSON.stringify({format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:innerWidth,height:document.documentElement.scrollHeight,scale:1}})",
-  );
-  const wrapped = await browse("cdp", "Page.captureScreenshot", params);
-  const result: unknown = JSON.parse(
-    wrapped.slice(wrapped.indexOf("{"), wrapped.lastIndexOf("}") + 1),
-  );
-  if (
-    typeof result !== "object" ||
-    result === null ||
-    !("data" in result) ||
-    typeof result.data !== "string"
-  )
-    throw new TypeError("Screenshot data is missing");
-  await writeFile(path, Buffer.from(result.data, "base64"));
-}
-const host = "document.querySelector('instagram-focus-controls').shadowRoot";
-await browse("goto", "http://127.0.0.1:4174/direct/inbox/");
-await browse("js", "sessionStorage.clear()");
-await browse("goto", "http://127.0.0.1:4174/direct/inbox/");
-await browse("wait", "instagram-focus-controls");
-await check(
-  "Explore and Reels hidden; Home and messages visible",
-  "['explore','reels'].every(id=>getComputedStyle(document.getElementById(id)).display==='none') && getComputedStyle(document.getElementById('inbox')).display!=='none'",
+await browse("goto", base);
+await browse(
+  "js",
+  "document.cookie='ds_user_id=1;path=/';document.cookie='qa_mode=ok;path=/';document.cookie='qa_follow=on;path=/';localStorage.clear();sessionStorage.clear()",
 );
-await browse("click", "#dynamic");
+await browse("goto", base);
+await browse("viewport", "375x900");
 await check(
-  "Dynamically inserted Reels hidden",
-  "getComputedStyle(document.getElementById('added')).display==='none'",
+  "No Focus panel or import controls",
+  "!document.querySelector('instagram-focus-controls,instagram-friends-setup,input[type=file]')",
 );
-await browse("click", "#mutate");
+await capture("automatic-checking");
+await eventually(
+  "Automatic session checks show only mutual posts",
+  `!(${hidden})('friend-video')&&(${hidden})('next-video')&&(${hidden})('suggested')`,
+);
 await check(
-  "Changed anchor target is re-filtered",
-  "getComputedStyle(document.getElementById('inbox')).display==='none'",
+  "No manual friend data stored",
+  "localStorage.length===0&&sessionStorage.length===0",
 );
-await browse("click", "#spa");
-await waitForPath("/");
-await check("SPA pushState returns to Home", "location.pathname==='/'");
+await eventually(
+  "Own profile resolved automatically",
+  "document.querySelector('instagram-friends-nav').shadowRoot.querySelector('#profile').getAttribute('href')==='/me/'",
+);
+await capture("home");
+await browse("js", "document.cookie='ds_user_id=99;path=/'");
+await eventually(
+  "Account switch clears prior approvals",
+  `(${hidden})('friend-video')&&document.querySelector('instagram-friends-nav').shadowRoot.querySelector('#profile').getAttribute('href')!=='/me/'`,
+);
+await capture("account-switched");
+await browse("js", "document.cookie='ds_user_id=1;path=/'");
+await browse("goto", `${base}/#user-search`);
 for (const width of [375, 768, 1280]) {
   await browse("viewport", `${width}x900`);
-  await browse("js", `${host}.querySelector('.launcher').click()`);
   await check(
-    `Panel fits ${width}px`,
-    `${host}.querySelector('.panel').getBoundingClientRect().left>=0 && ${host}.querySelector('.panel').getBoundingClientRect().right<=innerWidth`,
+    `Search reflows at ${width}`,
+    "document.documentElement.scrollWidth<=innerWidth",
   );
-  await browse("screenshot", `${evidence}/panel-${width}.png`, "--viewport");
-  await browse("press", "Escape");
-  await check(
-    `Escape returns focus ${width}px`,
-    `${host}.querySelector('.panel').hidden && ${host}.activeElement===${host}.querySelector('.launcher')`,
-  );
-  await browse("screenshot", `${evidence}/closed-${width}.png`, "--viewport");
+  await capture(`search-${width}`);
 }
-await browse(
-  "js",
-  `${host}.querySelector('.launcher').click(); Array.from(${host}.querySelectorAll('button')).find(b=>b.textContent==='Open posting mode').click()`,
-);
-await waitForPath("/");
-await check(
-  "Posting persists across navigation",
-  "location.pathname==='/' && document.documentElement.getAttribute('data-instagram-focus')==='off' && getComputedStyle(document.getElementById('home')).display!=='none'",
-);
-await browse("js", `${host}.querySelector('.launcher').click()`);
 await browse("viewport", "375x900");
-await browse("screenshot", `${evidence}/posting.png`, "--viewport");
-await browse(
-  "js",
-  `(() => {const original=Storage.prototype.setItem; Storage.prototype.setItem=function(){throw new DOMException('Storage disabled','SecurityError')}; ${host}.querySelector('.primary').click(); Storage.prototype.setItem=original})()`,
-);
+await browse("fill", "instagram-user-search input", "https://wrong");
+await browse("click", "instagram-user-search button");
 await check(
-  "Storage denial when leaving posting keeps state honest",
-  `${host}.querySelector('[role=alert]')!==null && location.pathname==='/' && document.documentElement.getAttribute('data-instagram-focus')==='off'`,
+  "Search rejects URLs",
+  "location.hash==='#user-search'&&document.querySelector('instagram-user-search').shadowRoot.querySelector('#error').textContent.length>0",
 );
-await browse("screenshot", `${evidence}/exit-storage-error.png`, "--viewport");
-await browse("js", `${host}.querySelector('.primary').click()`);
-await waitForPath("/");
+await capture("search-error");
+await browse("fill", "instagram-user-search input", "@friend");
+await browse("click", "instagram-user-search button");
+await eventually(
+  "Mutual profile opens automatically without import",
+  `location.pathname==='/friend/'&&!(${hidden})('grid-post')&&(${hidden})('profile-recommended')`,
+);
+await capture("profile-friend");
+await browse("js", "document.cookie='qa_follow=off;path=/'");
+await browse("click", "#follow");
+await eventually(
+  "Follow change automatically revokes post approval",
+  `(${hidden})('grid-post')`,
+);
+await capture("profile-follow-change");
+await browse("js", "document.cookie='qa_follow=on;path=/'");
+await browse("goto", `${base}/me/`);
+await eventually("Own profile grid visible", `!(${hidden})('grid-post')`);
+await capture("profile-own");
+await browse("goto", `${base}/stranger/`);
+await eventually(
+  "Nonmutual profile keeps Follow and hides posts",
+  `!(${hidden})('follow')&&(${hidden})('grid-post')`,
+);
+await capture("profile-stranger");
+await browse("goto", `${base}/explore/`);
+await browse("wait", "instagram-user-search");
 await check(
-  "Back to stories re-enables filtering",
-  "location.pathname==='/' && getComputedStyle(document.getElementById('explore')).display==='none'",
+  "Explore goes to username search without media",
+  "location.hash==='#user-search'&&getComputedStyle(document.querySelector('main')).display==='none'",
 );
-await browse(
-  "js",
-  `Storage.prototype.setItem=function(){throw new DOMException('Storage disabled','SecurityError')}; ${host}.querySelector('.launcher').click(); Array.from(${host}.querySelectorAll('button')).find(b=>b.textContent==='Open posting mode').click()`,
-);
+await browse("goto", `${base}/direct/inbox/`);
 await check(
-  "Storage denial keeps focus on and reports error",
-  `${host}.querySelector('[role=alert]')!==null && location.pathname==='/' && document.documentElement.getAttribute('data-instagram-focus')==='on'`,
+  "Messages retain native controls without overlapping navigation",
+  "!document.querySelector('instagram-friends-nav')&&getComputedStyle(document.querySelector('#composer')).display!=='none'",
 );
-await browse("screenshot", `${evidence}/storage-error.png`, "--viewport");
-await browse("goto", "http://127.0.0.1:4174/accounts/login/");
-await check(
-  "Login is untouched",
-  "!document.querySelector('instagram-focus-controls') && getComputedStyle(document.getElementById('home')).display!=='none'",
+await browse("goto", base);
+await browse("js", "document.cookie='qa_mode=blocked;path=/'");
+await browse("goto", base);
+await eventually(
+  "Rejected Instagram requests leave posts hidden and show status",
+  `(${hidden})('friend-video')&&document.querySelector('instagram-friends-nav').shadowRoot.querySelector('#status').textContent.includes('unavailable')`,
 );
-await browse("goto", "http://127.0.0.1:4174/reels/");
-await browse("wait", "instagram-focus-controls");
+await capture("automatic-unavailable");
+await browse("js", "document.cookie='qa_mode=ok;path=/'");
+await browse("goto", `${base}/accounts/login/`);
 await check(
-  "Direct Reels navigation returns to Home",
-  "location.pathname==='/'",
+  "Login remains untouched",
+  "document.documentElement.getAttribute('data-instagram-focus')==='off'&&!document.querySelector('instagram-friends-nav')",
 );
 for (const width of [375, 768, 1280]) {
   await browse("goto", "http://127.0.0.1:4173/");
   await browse("viewport", `${width}x900`);
   await check(
-    `Installation page reflows at ${width}px`,
+    `Install page reflows at ${width}`,
     "document.documentElement.scrollWidth<=innerWidth",
   );
-  await capturePage(`${evidence}/site-${width}.png`);
+  await capture(`site-${width}`);
+}
+await browse("viewport", "375x900");
+for (const id of ["homescreen", "help", "desktop"]) {
+  await browse("click", `#${id} summary`);
+  await capture(`site-${id}`);
+  await browse("click", `#${id} summary`);
 }
 await writeFile(
-  `${evidence}/checks.json`,
+  `${evidence}/browser-result.json`,
   JSON.stringify(
     {
-      checkedAt: new Date().toISOString(),
+      passed: true,
       scope:
-        "Local real-browser harness executing the production content script; not an authenticated Instagram or physical iPhone test",
-      checks,
+        "Compiled production script with real HTTP adapter against a local Instagram response fixture. Not a signed-in Instagram or iPhone test.",
+      time: new Date().toISOString(),
     },
     null,
     2,
   ),
 );
-console.info(`Saved ${checks.length} checks and screenshots to ${evidence}`);

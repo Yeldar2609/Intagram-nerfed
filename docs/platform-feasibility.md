@@ -1,33 +1,11 @@
-# Platform decision and sources
+# Platform feasibility
 
-Updated 9 October 2026. The earlier website-only decision is superseded: the user authorized an extension for Instagram's website and a home-screen icon where possible.
+The extension runs on Instagram's real website and session. The hosted page installs it; it is not a separate authenticated Instagram client.
 
-## Chosen architecture
+Mutual checks use same-origin GET requests to Instagram's existing web profile endpoints. Both following and followed-by must be explicitly true. These are undocumented endpoints and can change, omit fields or reject requests. When they fail, posts stay hidden and checks retry after a delay. The browser supplies its existing cookies; no passwords or session tokens are extracted, persisted or sent to another service. Only the non-secret viewer account ID is read to isolate tab-memory caches. No export, local import, follower-list crawling, or separate server is required.
 
-A content script runs on Instagram's own page, using the user's existing Instagram session. It changes navigation and link visibility; it does not implement a third-party Instagram API, collect credentials, or download private messages to a server. The same bundled script ships as a Manifest V3 desktop extension and a userscript for the Userscripts Safari extension.
+Results expire after five minutes and follow controls trigger faster checks. Account switching aborts in-flight requests and clears approvals. Three-second spacing limits requests per tab. HTTP failures apply backoff, including Retry-After. Visibility and DOM updates trigger filtering; no third-party requests are made by the extension.
 
-The hosted website distributes the script, desktop ZIP, original icon, and installation guide. It does not pretend to be a personal-account OAuth client or inbox.
+On iPhone use Userscripts in Safari, opened from a Shortcuts home-screen icon. Standalone Home Screen web apps may not run Safari extensions. Desktop uses the packaged MV3 extension.
 
-## iPhone distribution
-
-Userscripts documents App Store installation, enabling the Safari extension, `.user.js` installation from a webpage or script directory, document-start injection and isolated content context. The implementation uses that mechanism without GM permissions or external runtime dependencies.
-
-Primary documentation: https://github.com/quoid/userscripts#usage
-
-No custom Apple developer account is needed to use an existing script-host extension. A custom Safari app extension would have Apple's separate packaging/distribution requirements: https://developer.apple.com/documentation/safariservices/safari-web-extensions
-
-## Home-screen behavior
-
-The supported recipe is an Apple Shortcuts home-screen icon that opens Instagram's Home URL (https://www.instagram.com/) in Safari, with Safari set as the default browser. A standalone Add to Home Screen web app is not a verified extension execution context and is not represented as supported. Browser chrome remains visible. The installation guide includes the classic icon and manual shortcut steps.
-
-## Posting limits
-
-Posting mode exposes Instagram's own UI. It does not add a publishing API or guarantee that Instagram offers story uploading, calls, notifications, or attachments on every browser/account. That must be verified on the user's iPhone. The user removed timers, daily passes and app blocking.
-
-## Why the standalone site was not used
-
-A separate website cannot read or modify Instagram's document under the same-origin policy: https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
-
-Meta's supported messaging integration targets professional accounts, while this user confirmed a Personal account: https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/messaging-api
-
-The extension operates inside the Instagram page instead of pretending that signing in transfers Instagram access to another website.
+DOM filtering is best effort against changing Instagram markup. Unknown authors and unsupported grids stay hidden; this is not a complete custom friends timeline. Real signed-in Instagram, Safari extension hosting and physical iPhone behavior remain unverified.
