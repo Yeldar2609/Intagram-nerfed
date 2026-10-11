@@ -1,4 +1,5 @@
 import { Username } from "./friends";
+export const POSTS = 'article,[role="article"]';
 
 const RESERVED = new Set([
   "accounts",
@@ -17,6 +18,7 @@ const RESERVED = new Set([
   "challenge",
   "checkpoint",
   "oauth",
+  "create",
 ]);
 export function profileName(path: string): string | undefined {
   const raw = /^\/([^/]+)\/?$/.exec(path)?.[1];
@@ -50,7 +52,20 @@ export function articleAuthor(article: Element): string | undefined {
     const url = new URL(link.href, article.ownerDocument.baseURI);
     if (url.origin !== new URL(article.ownerDocument.baseURI).origin) continue;
     const name = profileName(url.pathname);
-    if (name && link.textContent?.trim().toLowerCase() === name)
+    if (!name) continue;
+    const label = link.cloneNode(true);
+    if (!(label instanceof Element)) continue;
+    for (const icon of label.querySelectorAll("svg,[aria-hidden=true]"))
+      icon.remove();
+    const avatar = link
+      .querySelector("img")
+      ?.getAttribute("alt")
+      ?.toLowerCase();
+    if (
+      label.textContent?.trim().toLowerCase() === name ||
+      avatar === `${name}'s profile picture` ||
+      avatar === `${name}’s profile picture`
+    )
       names.add(name);
   }
   return names.size === 1 ? [...names][0] : undefined;

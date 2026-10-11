@@ -58,6 +58,11 @@ await check(
   "Story viewer remains accessible and scroll gestures are not blocked",
   "(()=>{const e=new WheelEvent('wheel',{bubbles:true,cancelable:true});document.body.dispatchEvent(e);return location.pathname==='/stories/friend/123/' && !e.defaultPrevented})()",
 );
+await visit("/friend/reel/friend/");
+await check(
+  "Username-qualified Reel opens in the single-post view",
+  "location.pathname==='/p/friend/'",
+);
 await visit("/reel/friend/");
 await check(
   "Shared Reel opens the same media as a single post",

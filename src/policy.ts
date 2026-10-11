@@ -1,7 +1,12 @@
 export const INBOX = "/direct/inbox/";
 export const HOME = "/";
 export function mediaId(path: string): string | undefined {
-  return /^\/(?:p|reels?)\/([\w-]+)(?:\/|$)/i.exec(path)?.[1];
+  return /^\/(?:[a-z0-9._]+\/)?(?:p|reels?)\/([\w-]+)(?:\/|$)/i.exec(path)?.[1];
+}
+export function mediaOwner(path: string): string | undefined {
+  return /^\/([a-z0-9._]+)\/(?:p|reels?)\/[\w-]+(?:\/|$)/i
+    .exec(path)?.[1]
+    ?.toLowerCase();
 }
 export function singlePostPath(path: string): string | undefined {
   const id = mediaId(path);

@@ -1,4 +1,5 @@
-import { articleAuthor, profileName } from "./authors";
+import { articleAuthor, POSTS, profileName } from "./authors";
+import { isCreatePath } from "./creation";
 import { FILTER_CSS, filterLinks } from "./filter";
 import { createFriendApi } from "./friend-api";
 import { FriendChecks } from "./friend-checks";
@@ -11,7 +12,7 @@ const ROOT = "data-instagram-focus";
 const INSTALLED = "data-instagram-focus-installed";
 function start(): void {
   if (document.documentElement.hasAttribute(INSTALLED)) return;
-  document.documentElement.setAttribute(INSTALLED, "0.3.1");
+  document.documentElement.setAttribute(INSTALLED, "0.3.2");
   const style = document.createElement("style");
   style.textContent = FILTER_CSS + SURFACE_CSS;
   document.documentElement.append(style);
@@ -27,7 +28,7 @@ function start(): void {
     scheduled = false;
     const path = location.pathname;
     const auth = isAuthPath(path);
-    const native = /^\/(direct|stories)(\/|$)/.test(path);
+    const native = /^\/(direct|stories)(\/|$)/.test(path) || isCreatePath(path);
     const search = /^\/explore(?:\/|$)/i.test(path);
     if (path === HOME && location.hash === "#user-search") {
       location.replace("/explore/search/");
@@ -42,7 +43,7 @@ function start(): void {
     const post = singlePostPath(path);
     if (!media) lockedPost = undefined;
     if (media) lockedPost ??= post ?? path;
-    if (post && (post !== lockedPost || /^\/reels?\//i.test(path))) {
+    if (post && (post !== lockedPost || path !== post)) {
       document.documentElement.setAttribute(ROOT, "redirecting");
       location.replace(lockedPost ?? post);
       return;
@@ -50,7 +51,7 @@ function start(): void {
     const names =
       auth || native || search
         ? []
-        : Array.from(document.querySelectorAll("article"))
+        : Array.from(document.querySelectorAll(POSTS))
             .map(articleAuthor)
             .filter((name): name is string => !!name);
     const profile = profileName(path);

@@ -4,7 +4,9 @@ import sharp from "sharp";
 
 const browser = process.env["BROWSE_BIN"];
 if (!browser) throw new TypeError("Set BROWSE_BIN to gstack browse");
-export const evidence = resolve("work/qa/v031-native");
+export const evidence = resolve(
+  process.env["QA_EVIDENCE_DIR"] ?? "work/qa/v031-native",
+);
 await mkdir(evidence, { recursive: true });
 export async function browse(...args: string[]): Promise<string> {
   const child = Bun.spawn([browser ?? "", ...args], {

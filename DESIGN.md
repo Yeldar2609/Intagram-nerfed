@@ -1,4 +1,4 @@
-# Design contract — v0.3.1
+# Design contract — v0.3.2
 
 Keep the real Instagram interface. No fabricated inbox, feed or login. The supplied classic icon remains the only image asset on the installation page. Dark neutral surfaces and blue actions follow shared tokens in src/tokens.ts.
 
@@ -9,6 +9,7 @@ Background #101114; surface #202126; text #f5f5f7; muted #b9bbc4; border #42444c
 ## Components
 
 - Remove Focus and posting mode completely. No import/export controls.
+- Preserve existing native Create/Your story controls and upload editors. Do not invent a story-posting button when Instagram provides none. Mobile-browser story publishing is currently unsupported by Instagram.
 - Preserve Instagram's own navigation DOM, icons, handlers and layout. No replacement toolbar, search page, or body-padding overrides. Reels-feed links remain hidden; original Home, Search, Messages and Profile controls stay native.
 - A small inline live status before the main content reports pending checks or an error reason. No buttons or overlays. No approval prompts or recurring manual setup.
 - Native Search retains input and people results while Explore post articles, grid links and non-avatar media are hidden. Legacy /#user-search bookmarks move to native /explore/search/.

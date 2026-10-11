@@ -1,19 +1,26 @@
+import { POSTS } from "./authors";
+import { isComposer, isCreatePath } from "./creation";
 import { isAuthPath, mediaId } from "./policy";
 
 export function hasMediaView(doc: Document, path: string): boolean {
   return (
     !/^\/stories(?:\/|$)/i.test(path) &&
-    (!!mediaId(path) || !!doc.querySelector('[role="dialog"] video'))
+    !isCreatePath(path) &&
+    (!!mediaId(path) ||
+      Array.from(doc.querySelectorAll('[role="dialog"]')).some(
+        (dialog) => !isComposer(dialog) && !!dialog.querySelector("video"),
+      ))
   );
 }
 
 export function selectedMediaItem(doc: Document, path: string): Element | null {
   const scope =
-    doc.querySelector('[role="dialog"]') ??
-    doc.querySelector('main, [role="main"]');
+    Array.from(doc.querySelectorAll('[role="dialog"]')).find(
+      (dialog) => !isComposer(dialog),
+    ) ?? doc.querySelector('main, [role="main"]');
   const id = mediaId(path);
   const selected = id
-    ? Array.from(scope?.querySelectorAll("article") ?? []).find((article) =>
+    ? Array.from(scope?.querySelectorAll(POSTS) ?? []).find((article) =>
         Array.from(article.querySelectorAll<HTMLAnchorElement>("a[href]")).some(
           (link) => mediaId(new URL(link.href, doc.baseURI).pathname) === id,
         ),
@@ -21,7 +28,7 @@ export function selectedMediaItem(doc: Document, path: string): Element | null {
     : undefined;
   return (
     selected ??
-    scope?.querySelector("article") ??
+    scope?.querySelector(POSTS) ??
     scope?.querySelector("video") ??
     null
   );
