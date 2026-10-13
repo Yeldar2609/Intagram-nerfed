@@ -212,6 +212,27 @@ test("a rejected author cannot starve later authors after backoff", async () => 
   expect(checked).toEqual(["missing", "friend"]);
   expect(checks.snapshot(72_001).mutuals).toEqual(["friend"]);
 });
+test("successful unrelated checks do not erase a failed friend's explanation", async () => {
+  const checks = new FriendChecks(
+    {
+      ...api,
+      relationship: async (username) => {
+        if (username === "friend")
+          throw new CheckUnavailable(60_000, "missing relationship", false);
+        return { id: "3", username, mutual: false };
+      },
+    },
+    () => {},
+  );
+  checks.update("1", ["friend", "stranger"], 0);
+  await checks.tick(0);
+  await checks.tick(3000);
+  await checks.tick(6000);
+  expect(checks.status(6001)).toContain("missing relationship");
+  checks.invalidate("friend");
+  expect(checks.status(6001)).toBe("Checking mutual friends…");
+});
+
 test("checks authors beyond the first fifty without a permanent cutoff", async () => {
   const names = Array.from({ length: 51 }, (_, index) => `friend${index}`);
   const checks = new FriendChecks(

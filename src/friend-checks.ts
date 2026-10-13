@@ -1,7 +1,11 @@
 import { CheckUnavailable, type FriendApi } from "./friend-api";
 import type { Friends } from "./friends";
 
-type Cached = { readonly mutual: boolean; readonly until: number };
+type Cached = {
+  readonly mutual: boolean;
+  readonly until: number;
+  readonly failure?: string;
+};
 const TTL = 5 * 60_000;
 export class FriendChecks {
   private viewer: string | undefined;
@@ -52,8 +56,13 @@ export class FriendChecks {
   }
   status(now: number): string {
     if (!this.viewer) return "Sign in to Instagram to check mutual friends.";
-    if (this.failure)
-      return `Posts waiting for verification: ${this.failure}. Stories, messages and search still work. Retrying automatically.`;
+    const failure =
+      this.failure ??
+      this.names
+        .map((name) => this.cache.get(name))
+        .find((value) => value && value.until > now && value.failure)?.failure;
+    if (failure)
+      return `Posts waiting for verification: ${failure}. Stories, messages and search still work. Retrying automatically.`;
     if (
       this.busy ||
       this.names.some(
@@ -109,6 +118,7 @@ export class FriendChecks {
         if (name)
           this.cache.set(name, {
             mutual: false,
+            failure: error.reason,
             until: now + Math.max(TTL, 2 * error.retryMs + 8000),
           });
       }

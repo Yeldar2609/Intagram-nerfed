@@ -3,9 +3,11 @@ import { creationControls, isComposer, isCreatePath } from "./creation";
 import { type Friends, maySeePosts } from "./friends";
 import { hasMediaView, selectedMediaItem } from "./media";
 import { mediaId, mediaOwner } from "./policy";
+import { discoverPosts } from "./posts";
 
 const HIDDEN = "data-instagram-focus-surface-hidden";
 const READY = "data-instagram-focus-home-ready";
+const PENDING = "data-instagram-friends-pending";
 const MAIN = 'main, [role="main"]';
 // Keep native story controls, including Instagram's button-based story tray.
 const STORIES =
@@ -29,9 +31,11 @@ export function filterSurfaces(
   const editing = (node: Element) =>
     editors.some((editor) => editor.contains(node));
   const approved = new Set<Element>();
+  const pending = new Set<Element>();
   const profile = profileName(path);
   if (!native) {
-    for (const article of doc.querySelectorAll(POSTS)) {
+    for (const article of discoverPosts(doc)) {
+      const author = articleAuthor(article);
       const tabs = article.previousElementSibling;
       const selectedTab = tabs?.matches('[role="tablist"]')
         ? tabs.querySelector('[role="tab"][aria-selected="true"]')
@@ -48,18 +52,39 @@ export function filterSurfaces(
         (!!article.closest('[role="tabpanel"],[role="grid"]') || !!postsTab) &&
         !article.closest('aside,[role="complementary"]') &&
         !article.querySelector("header") &&
-        !articleAuthor(article) &&
+        !author &&
         !!article.querySelector("a[href] img");
-      article.toggleAttribute("data-instagram-friends-grid", grid);
+      const ownedGrid =
+        !!profile &&
+        !author &&
+        !article.closest('aside,[role="complementary"]') &&
+        Array.from(article.querySelectorAll<HTMLAnchorElement>("a[href]")).some(
+          (link) => {
+            const url = new URL(link.href, doc.baseURI);
+            return (
+              url.origin === new URL(doc.baseURI).origin &&
+              mediaOwner(url.pathname) === profile &&
+              !!link.querySelector("img,video")
+            );
+          },
+        );
+      if (grid || ownedGrid)
+        article.setAttribute(
+          "data-instagram-friends-grid",
+          grid ? "native" : "owned",
+        );
+      else article.removeAttribute("data-instagram-friends-grid");
       const allow =
         editing(article) ||
         (!search &&
-          maySeePosts(articleAuthor(article), friends) &&
+          maySeePosts(author, friends) &&
           !/\bSponsored\b/i.test(
             article.querySelector("header")?.textContent ?? "",
           ));
       if (allow) approved.add(article);
-      else if (!grid) hidden.add(article);
+      else if (!grid && !ownedGrid) hidden.add(article);
+      if (home && !author && !grid && !ownedGrid && !allow)
+        pending.add(article);
       article.toggleAttribute("data-instagram-friends-approved", allow);
     }
     for (const main of doc.querySelectorAll(MAIN)) {
@@ -75,18 +100,16 @@ export function filterSurfaces(
         const owner = mediaOwner(url.pathname);
         const allow =
           editing(link) ||
-          !!link.closest(
-            ':is(article,[role="article"])[data-instagram-friends-approved]',
-          ) ||
+          !!link.closest(`:is(${POSTS})[data-instagram-friends-approved]`) ||
           (!!profile &&
             maySeePosts(profile, friends) &&
             (owner
               ? owner === profile
               : !!link.closest(
-                  '[role="tabpanel"],[role="grid"],[data-instagram-friends-grid]',
+                  '[role="tabpanel"],[role="grid"],[data-instagram-friends-grid="native"]',
                 )) &&
             !link.closest(
-              'aside,[role="complementary"],:is(article,[role="article"]):not([data-instagram-friends-grid])',
+              `aside,[role="complementary"],:is(${POSTS}):not([data-instagram-friends-grid])`,
             ));
         link.toggleAttribute("data-instagram-friends-approved", allow);
         if (!allow) hidden.add(link);
@@ -126,6 +149,7 @@ export function filterSurfaces(
       const keep = [
         ...stories,
         ...approved,
+        ...pending,
         ...controls,
         ...creationControls(main),
         ...editors,
@@ -195,6 +219,9 @@ export function filterSurfaces(
       }
     }
   }
+  for (const node of doc.querySelectorAll(`[${PENDING}]`))
+    if (!pending.has(node)) node.removeAttribute(PENDING);
+  for (const node of pending) node.setAttribute(PENDING, "");
   for (const node of doc.querySelectorAll(`[${HIDDEN}]`)) {
     if (!hidden.has(node)) node.removeAttribute(HIDDEN);
   }
@@ -209,9 +236,10 @@ export function filterSurfaces(
 
 export const SURFACE_CSS = `
 html[data-instagram-focus="on"] [data-instagram-friends-status] {font:inherit;line-height:1.4;margin:12px auto;padding:0 16px;max-width:600px;box-sizing:border-box;overflow-wrap:anywhere;color:inherit}
-html[data-instagram-focus="on"] [${HIDDEN}] { display: none !important; }
+html[data-instagram-focus="on"] [${HIDDEN}]:not([${PENDING}]) { display: none !important; }
+html[data-instagram-focus="on"] [${PENDING}], html[data-instagram-focus="on"] [${PENDING}] * { visibility: hidden !important; }
 html[data-instagram-focus-view="home"] :is(main,[role="main"]):not([${READY}]) { visibility: hidden !important; }
-html[data-instagram-focus="on"]:not([data-instagram-friends-native]) :is(${POSTS}):not([data-instagram-friends-approved]):not([data-instagram-friends-grid]) { display: none !important; }
+html[data-instagram-focus="on"]:not([data-instagram-friends-native]) :is(${POSTS}):not([data-instagram-friends-approved]):not([data-instagram-friends-grid]):not([${PENDING}]) { display: none !important; }
 html[data-instagram-focus="on"]:not([data-instagram-friends-native]) :is(main,[role="main"]) a:is([href*="/p/"],[href*="/reel/"],[href*="/reels/"]):not([data-instagram-friends-approved]) { display: none !important; }
 html[data-instagram-focus-view="media"], html[data-instagram-focus-view="media"] body { overflow: hidden !important; overscroll-behavior: none !important; }
 html[data-instagram-focus-view="media"] :is(main,[role="main"],[role="dialog"]) { overflow: hidden !important; overscroll-behavior: none !important; }

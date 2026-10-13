@@ -1,3 +1,5 @@
+import { POSTS } from "./authors";
+
 export function isCreatePath(path: string): boolean {
   return /^\/create(?:\/|$)/i.test(path);
 }
@@ -16,7 +18,7 @@ export function creationControls(main: Element): Element[] {
   return Array.from(
     main.querySelectorAll('button,[role="button"],a[href]'),
   ).filter((control) => {
-    if (control.closest('article,[role="article"],[role="feed"]')) return false;
+    if (control.closest(`${POSTS},[role="feed"]`)) return false;
     const labels = [
       control.getAttribute("aria-label"),
       control.textContent,

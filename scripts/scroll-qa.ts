@@ -51,7 +51,7 @@ await browse(
 );
 await check(
   "Dynamically inserted Home posts stay hidden",
-  "getComputedStyle(document.querySelector('#new-post')).display==='none'",
+  "(()=>{const style=getComputedStyle(document.querySelector('#new-post'));return style.display==='none'||style.visibility==='hidden'})()",
 );
 await browse("click", "#story");
 await check(

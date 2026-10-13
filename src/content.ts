@@ -1,4 +1,4 @@
-import { articleAuthor, POSTS, profileName } from "./authors";
+import { articleAuthor, profileName } from "./authors";
 import { isCreatePath } from "./creation";
 import { FILTER_CSS, filterLinks } from "./filter";
 import { createFriendApi } from "./friend-api";
@@ -6,13 +6,14 @@ import { FriendChecks } from "./friend-checks";
 import { viewerId } from "./friends";
 import { hasMediaView, installMediaGuard } from "./media";
 import { HOME, isAuthPath, isDistractionPath, singlePostPath } from "./policy";
+import { discoverPosts } from "./posts";
 import { filterSurfaces, SURFACE_CSS } from "./surfaces";
 
 const ROOT = "data-instagram-focus";
 const INSTALLED = "data-instagram-focus-installed";
 function start(): void {
   if (document.documentElement.hasAttribute(INSTALLED)) return;
-  document.documentElement.setAttribute(INSTALLED, "0.3.2");
+  document.documentElement.setAttribute(INSTALLED, "0.3.3");
   const style = document.createElement("style");
   style.textContent = FILTER_CSS + SURFACE_CSS;
   document.documentElement.append(style);
@@ -51,7 +52,7 @@ function start(): void {
     const names =
       auth || native || search
         ? []
-        : Array.from(document.querySelectorAll(POSTS))
+        : discoverPosts(document)
             .map(articleAuthor)
             .filter((name): name is string => !!name);
     const profile = profileName(path);

@@ -1,6 +1,6 @@
 # Instagram friends extension
 
-[Install / update](https://yeldar2609.github.io/Intagram-nerfed/) · v0.3.2
+[Install / update](https://yeldar2609.github.io/Intagram-nerfed/) · v0.3.3
 
 A free personal extension for Instagram's actual website, with its original navigation and search controls. Stories and messages remain available. Posts are shown only after the author is verified as a mutual friend, or as your own account. Native people search remains available with Explore media hidden. No custom toolbar, Focus button, posting mode, exports or imports.
 
@@ -10,7 +10,7 @@ Follow the three short steps on the [installation page](https://yeldar2609.githu
 
 **Story posting:** Instagram's [current mobile-browser help](https://help.instagram.com/1257341144298972/?cms_platform=mobile-touch) says story sharing is unavailable in mobile browsers. This extension preserves existing native creation controls and editors; it cannot add an unsupported Safari story uploader. Viewing stories remains available.
 
-v0.3.2 fixes filters that hid native article grids without a tabpanel, decorated author links, role-based feed cards and loading markers. It also recognizes username-prefixed post/reel URLs, as supported by [yt-dlp's pinned Instagram extractor](https://github.com/yt-dlp/yt-dlp/blob/897341241f2bfb2439fe0367f4c7c9ccd29a3828/yt_dlp/extractor/instagram.py#L277-L279). Upload previews are kept separate from the single-video scroll guard.
+v0.3.3 fixes author detection when a story avatar precedes the username, recognizes individual feed cards without article tags when their permalink identifies the same author, and keeps owner-qualified profile thumbnails visible inside native wrappers. Unfinished articles retain their layout while hidden, allowing intersection-based media loading to finish. Failed checks keep their explanation even when another account's check succeeds. No new controls or imports.
 
 ## Automatic checks
 
