@@ -31,6 +31,28 @@ const metadata = `// ==UserScript==
 // ==/UserScript==
 `;
 await writeFile("dist/site/instagram-focus.user.js", metadata + code);
+const diagnostic = await Bun.build({
+  entrypoints: ["src/diagnostic-panel.ts"],
+  target: "browser",
+  format: "iife",
+});
+const diagnosticCode = diagnostic.outputs[0];
+if (!diagnostic.success || !diagnosticCode)
+  throw new AggregateError(diagnostic.logs, "Diagnostic build failed");
+await writeFile(
+  "dist/site/instagram-layout-check.user.js",
+  metadata
+    .replace("Instagram — just messages", "Instagram — layout check")
+    .replace("// @version      0.3.4", "// @version      1.0.0")
+    .replace(
+      /\/\/ @description[^\n]+/,
+      "// @description  Temporary local layout report. No account data or network requests.",
+    )
+    .replace(
+      "// @run-at       document-start",
+      "// @run-at       document-idle",
+    ) + (await diagnosticCode.text()),
+);
 await cp("site", "dist/site", { recursive: true });
 await writeFile("dist/site/tokens.css", `:root { ${TOKENS} }`);
 const sizes = [32, 48, 128, 180, 512] as const;
