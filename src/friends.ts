@@ -6,7 +6,7 @@ export const Username = z
   .regex(/^(?=.*[a-z0-9_])[a-z0-9._]{1,30}$/);
 export type Friends = {
   readonly owner: string | undefined;
-  readonly mutuals: readonly string[];
+  readonly following: readonly string[];
 };
 export function maySeePosts(
   username: string | undefined,
@@ -15,7 +15,7 @@ export function maySeePosts(
   return (
     !!username &&
     !!friends &&
-    (username === friends.owner || friends.mutuals.includes(username))
+    (username === friends.owner || friends.following.includes(username))
   );
 }
 export function viewerId(cookie: string): string | undefined {

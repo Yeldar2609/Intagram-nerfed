@@ -5,7 +5,7 @@ import { hasMediaView } from "../src/media";
 import { mediaId } from "../src/policy";
 import { filterSurfaces } from "../src/surfaces";
 
-const friends = { owner: "me", mutuals: ["friend"] };
+const friends = { owner: "me", following: ["friend"] };
 afterEach(() => {
   document.body.innerHTML = "";
 });
@@ -71,7 +71,7 @@ test("supports owner-qualified links while rejecting another owner's grid link",
   expect(hidden("post")).toBe(false);
   expect(hidden("recommended")).toBe(true);
 });
-test("a nonmutual native article grid still stays hidden", () => {
+test("a unfollowed native article grid still stays hidden", () => {
   document.body.innerHTML =
     '<main><header><button id="follow">Follow</button></header><article><a id="post" href="/stranger/p/one/"><img></a></article></main>';
   filterSurfaces(document, "/stranger/", friends);
@@ -79,11 +79,11 @@ test("a nonmutual native article grid still stays hidden", () => {
   expect(hidden("follow")).toBe(false);
 });
 
-test("revokes native grid approval when a friend is no longer mutual", () => {
+test("revokes native grid approval when a friend is no longer followed", () => {
   document.body.innerHTML = `<main><header>Profile</header>${postsTab}<article><a id="post" href="/friend/p/one/"><img></a></article></main>`;
   filterSurfaces(document, "/friend/", friends);
   expect(hidden("post")).toBe(false);
-  filterSurfaces(document, "/friend/", { owner: "me", mutuals: [] });
+  filterSurfaces(document, "/friend/", { owner: "me", following: [] });
   expect(hidden("post")).toBe(true);
 });
 

@@ -3,7 +3,7 @@ import { afterEach, expect, test } from "vitest";
 import { articleAuthor } from "../src/authors";
 import { filterSurfaces } from "../src/surfaces";
 
-const friends = { owner: "me", mutuals: ["friend"] };
+const friends = { owner: "me", following: ["friend"] };
 afterEach(() => {
   document.body.innerHTML = "";
 });
@@ -15,7 +15,7 @@ function node(id: string): HTMLElement {
 const hidden = (id: string) =>
   !!node(id).closest("[data-instagram-focus-surface-hidden]");
 
-test("a story avatar before the username does not hide a mutual feed post", () => {
+test("a story avatar before the username does not hide a followed feed post", () => {
   document.body.innerHTML =
     '<main><article id="post"><div><a href="/stories/friend/123/"><img alt="friend\u0027s profile picture"></a><a href="/friend/">friend</a></div><img id="photo"><a href="/p/one/">Today</a></article></main>';
   expect(articleAuthor(node("post"))).toBe("friend");

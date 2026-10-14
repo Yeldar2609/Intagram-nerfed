@@ -6,7 +6,7 @@ import { filterSurfaces } from "../src/surfaces";
 
 const friends = {
   owner: "me",
-  mutuals: ["friend"],
+  following: ["friend"],
 };
 afterEach(() => {
   document.body.innerHTML = "";
@@ -16,13 +16,13 @@ function hidden(id: string): boolean {
   if (!node) throw new TypeError("Missing fixture");
   return !!node.closest("[data-instagram-focus-surface-hidden]");
 }
-test("Home shows mutual posts and excludes a followed-only author even when a friend comments", () => {
+test("Home shows followed posts and excludes an unfollowed author even when a friend comments", () => {
   // Given distinct authors and a misleading friend comment.
   document.body.innerHTML =
     '<main><article id="friend"><header><a href="/friend/">friend</a></header><img src="friend.jpg"></article><article id="stranger"><header><a href="/stranger/">stranger</a></header><img src="stranger.jpg"><a href="/friend/">friend</a></article><article id="unknown"><img></article></main>';
-  // When the verified mutual list is applied.
+  // When the verified following list is applied.
   filterSurfaces(document, "/", friends);
-  // Then only the mutual author is visible.
+  // Then only the followed author is visible.
   expect(hidden("friend")).toBe(false);
   expect(hidden("stranger")).toBe(true);
   expect(hidden("unknown")).toBe(true);
@@ -34,7 +34,7 @@ test("recognizes the author before post media in div-based article layouts", () 
   if (!article) throw new TypeError("Missing fixture");
   expect(articleAuthor(article)).toBe("friend");
 });
-test("profile retains Follow but hides nonmutual posts", () => {
+test("profile retains Follow but hides unfollowed posts", () => {
   document.body.innerHTML =
     '<main><header><h1>stranger</h1><button id="follow">Follow</button></header><div role="tabpanel"><a id="post" href="/p/stranger/"><img></a></div></main>';
   filterSurfaces(document, "/stranger/", friends);
@@ -69,7 +69,7 @@ test("hides standalone post media when an unsupported layout has no author", () 
   expect(hidden("unknown-video")).toBe(true);
 });
 
-test("keeps mutual profile grid containers that use article markup", () => {
+test("keeps followed profile grid containers that use article markup", () => {
   document.body.innerHTML =
     '<main><header>Profile</header><div role="tabpanel"><article id="grid-shell"><div><a id="grid-post" href="/p/ok/"><img></a></div></article></div></main>';
   filterSurfaces(document, "/friend/", friends);

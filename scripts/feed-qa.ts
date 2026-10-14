@@ -34,7 +34,7 @@ await markup(
   `<section><div id="friend-card"><div><a href="/stories/friend/123/">${avatar}</a><a id="author" href="/friend/">friend</a></div>${photo.replace("<img", '<img id="feed-photo"')}<a href="/friend/p/one/">Today</a></div><div id="stranger"><a href="/stranger/">stranger</a>${photo}<a href="/stranger/p/two/">Today</a><p><a href="/friend/">friend</a> mentioned in caption</p></div></section>`,
 );
 await eventually(
-  "Div feed card with story avatar is verified and visible; caption does not approve stranger",
+  "Followed account without follow-back is visible; follower-only account stays hidden",
   `(${visible})('feed-photo')&&!(${visible})('stranger')`,
 );
 await capture("feed-visible");
@@ -72,7 +72,7 @@ await markup(
   `<article id="profile-shell"><header><h2>friend</h2></header><div><a id="owned" href="/friend/p/one/">${photo}</a><a id="unknown" href="/p/unknown/">${photo}</a><a id="other" href="/stranger/p/two/">${photo}</a></div></article>`,
 );
 await eventually(
-  "Profile wrapper preserves only the mutual owner's qualified thumbnail",
+  "Profile wrapper preserves only the followed owner's qualified thumbnail",
   `(${visible})('owned')&&!(${visible})('unknown')&&!(${visible})('other')`,
 );
 await capture("profile-owned");

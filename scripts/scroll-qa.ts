@@ -38,7 +38,7 @@ await browse(
 );
 await visit("/");
 await check(
-  "Home preserves stories and hides nonmutual recommendations",
+  "Home preserves stories and hides unfollowed recommendations",
   `!(${hidden})(document.querySelector('#story')) && ['next-video','suggested'].every(id=>(${hidden})(document.getElementById(id))) && location.pathname==='/'`,
 );
 await browse(

@@ -7,7 +7,7 @@ import { filterSurfaces } from "../src/surfaces";
 afterEach(() => {
   document.body.innerHTML = "";
 });
-const friends = { owner: "me", mutuals: ["friend"] };
+const friends = { owner: "me", following: ["friend"] };
 function hidden(id: string): boolean {
   return !!document
     .getElementById(id)
@@ -26,7 +26,7 @@ test("native search route and buttons remain available", () => {
   expect(hidden("nav")).toBe(false);
   expect(hidden("suggested")).toBe(true);
 });
-test("native search shows people but never Explore media, even mutual posts", () => {
+test("native search shows people but never Explore media, even followed posts", () => {
   document.body.innerHTML =
     '<main><input aria-label="Search"><a id="person" href="/friend/"><img alt="Profile picture"></a><article id="post"><header><a href="/friend/">friend</a></header><img></article><a id="grid" href="/p/explore/"><img></a><video id="loose"></video></main>';
   filterSurfaces(document, "/explore/", friends);

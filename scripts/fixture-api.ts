@@ -36,11 +36,11 @@ export async function fixtureApi(
           pk: variables.id,
           username,
           friendship_status: {
-            following: true,
-            followed_by:
+            following:
               id === "1" &&
               username === "friend" &&
               !cookies.includes("qa_follow=off"),
+            followed_by: username === "stranger",
           },
         },
       },

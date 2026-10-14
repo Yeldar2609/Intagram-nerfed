@@ -2,7 +2,7 @@ import { CheckUnavailable, type FriendApi } from "./friend-api";
 import type { Friends } from "./friends";
 
 type Cached = {
-  readonly mutual: boolean;
+  readonly following: boolean;
   readonly until: number;
   readonly failure?: string;
 };
@@ -49,13 +49,13 @@ export class FriendChecks {
   snapshot(now: number): Friends {
     return {
       owner: this.ownerUntil > now ? this.owner : undefined,
-      mutuals: [...this.cache]
-        .filter(([, value]) => value.mutual && value.until > now)
+      following: [...this.cache]
+        .filter(([, value]) => value.following && value.until > now)
         .map(([name]) => name),
     };
   }
   status(now: number): string {
-    if (!this.viewer) return "Sign in to Instagram to check mutual friends.";
+    if (!this.viewer) return "Sign in to Instagram to check who you follow.";
     const failure =
       this.failure ??
       this.names
@@ -70,7 +70,7 @@ export class FriendChecks {
           name !== this.owner && (this.cache.get(name)?.until ?? 0) <= now,
       )
     )
-      return "Checking mutual friends…";
+      return "Checking who you follow…";
     return "";
   }
   async tick(now: number): Promise<void> {
@@ -105,7 +105,7 @@ export class FriendChecks {
           this.owner = result.username;
           this.ownerUntil = now + TTL;
         }
-        this.cache.set(name, { mutual: result.mutual, until: now + TTL });
+        this.cache.set(name, { following: result.following, until: now + TTL });
         this.failure = undefined;
       }
     } catch (error) {
@@ -117,7 +117,7 @@ export class FriendChecks {
       else {
         if (name)
           this.cache.set(name, {
-            mutual: false,
+            following: false,
             failure: error.reason,
             until: now + Math.max(TTL, 2 * error.retryMs + 8000),
           });

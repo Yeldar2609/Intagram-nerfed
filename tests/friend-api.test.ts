@@ -3,6 +3,7 @@ import {
   CheckUnavailable,
   createFriendApi,
   type HttpFetch,
+  parseRelationship,
 } from "../src/friend-api";
 
 test("missing legacy flags fall back to current web profile with session and CSRF", async () => {
@@ -32,7 +33,7 @@ test("missing legacy flags fall back to current web profile with session and CSR
   );
   expect(
     await api.relationship("friend", new AbortController().signal),
-  ).toEqual({ id: "2", username: "friend", mutual: true });
+  ).toEqual({ id: "2", username: "friend", following: true });
   expect(requests).toHaveLength(2);
   for (const request of requests) {
     expect(request.credentials).toBe("include");
@@ -75,8 +76,8 @@ test("unsupported legacy endpoint resolves exact username through web search", a
         () => "",
         fetcher,
       ).relationship("friend", new AbortController().signal)
-    ).mutual,
-  ).toBe(false);
+    ).following,
+  ).toBe(true);
   expect(fetcher).toHaveBeenCalledTimes(3);
 });
 
@@ -97,7 +98,7 @@ test.each([
   expect(fetcher).toHaveBeenCalledTimes(1);
 });
 
-test("missing fallback follow-back status stays unknown", async () => {
+test("following without follow-back status succeeds without extra requests", async () => {
   const fetcher = vi.fn<HttpFetch>(async () =>
     Response.json({
       data: {
@@ -115,7 +116,8 @@ test("missing fallback follow-back status stays unknown", async () => {
       () => "",
       fetcher,
     ).relationship("friend", new AbortController().signal),
-  ).rejects.toBeInstanceOf(CheckUnavailable);
+  ).resolves.toEqual({ id: "2", username: "friend", following: true });
+  expect(fetcher).toHaveBeenCalledTimes(1);
 });
 
 test("owner uses web GraphQL instead of mobile users/info and verifies returned ID", async () => {
@@ -130,4 +132,77 @@ test("owner uses web GraphQL instead of mobile users/info and verifies returned 
   await expect(
     api.owner("2", new AbortController().signal),
   ).rejects.toBeInstanceOf(CheckUnavailable);
+});
+
+test.each([
+  [true, true, true],
+  [true, false, true],
+  [false, true, false],
+  [false, false, false],
+])("uses only whether the viewer follows the author (%s,%s)", (following, followedBy, allowed) => {
+  const data = {
+    data: {
+      user: {
+        id: "2",
+        username: "friend",
+        followed_by_viewer: following,
+        follows_viewer: followedBy,
+      },
+    },
+  };
+  expect(parseRelationship(data, "friend").following).toBe(allowed);
+});
+test("accepts nested native relationship fields", () => {
+  expect(
+    parseRelationship(
+      {
+        data: {
+          user: {
+            pk: 2,
+            username: "friend",
+            friendship_status: { following: true, followed_by: true },
+          },
+        },
+      },
+      "friend",
+    ).following,
+  ).toBe(true);
+});
+test.each([
+  true,
+  false,
+])("reads following=%s when Instagram omits follow-back information", (following) => {
+  const data = {
+    data: {
+      user: { id: "2", username: "friend", followed_by_viewer: following },
+    },
+  };
+  expect(parseRelationship(data, "friend").following).toBe(following);
+});
+test("never interprets missing following or mismatched names as approval", () => {
+  expect(() =>
+    parseRelationship(
+      {
+        data: {
+          user: { id: "2", username: "friend", follows_viewer: true },
+        },
+      },
+      "friend",
+    ),
+  ).toThrow(CheckUnavailable);
+  expect(() =>
+    parseRelationship(
+      {
+        data: {
+          user: {
+            id: "2",
+            username: "other",
+            follows_viewer: true,
+            followed_by_viewer: true,
+          },
+        },
+      },
+      "friend",
+    ),
+  ).toThrow(CheckUnavailable);
 });

@@ -13,7 +13,7 @@ const ROOT = "data-instagram-focus";
 const INSTALLED = "data-instagram-focus-installed";
 function start(): void {
   if (document.documentElement.hasAttribute(INSTALLED)) return;
-  document.documentElement.setAttribute(INSTALLED, "0.3.3");
+  document.documentElement.setAttribute(INSTALLED, "0.3.4");
   const style = document.createElement("style");
   style.textContent = FILTER_CSS + SURFACE_CSS;
   document.documentElement.append(style);

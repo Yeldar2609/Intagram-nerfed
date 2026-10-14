@@ -61,7 +61,7 @@ test("preserves only the opened post and hides routes to other videos", () => {
     '<main><article id="current"><header><a href="/friend/">friend</a></header><a href="/p/friend/">Current</a><video></video><button id="carousel" aria-label="Next">Next photo</button></article><article id="next"><a href="/reel/next/">Next</a></article><a id="recommendation" href="/p/third/">More</a><button id="next-reel" aria-label="Next reel">Next</button></main>';
   filterSurfaces(document, "/p/friend/", {
     owner: "me",
-    mutuals: ["friend"],
+    following: ["friend"],
   });
   expect(hidden("#current")).toBe(false);
   expect(hidden("#next")).toBe(true);
@@ -75,7 +75,7 @@ test("keeps the requested video even when another article precedes it", () => {
     '<main><article><a href="/p/other/">Other</a><video id="other"></video></article><article><header><a href="/friend/">friend</a></header><a href="/p/friend/">Friend</a><video id="friend"></video><video id="carousel-video"></video></article></main>';
   filterSurfaces(document, "/p/friend/", {
     owner: "me",
-    mutuals: ["friend"],
+    following: ["friend"],
   });
   expect(hidden("#other")).toBe(true);
   expect(hidden("#friend")).toBe(false);

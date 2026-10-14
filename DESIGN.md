@@ -1,4 +1,4 @@
-# Design contract — v0.3.2
+# Design contract — v0.3.4
 
 Keep the real Instagram interface. No fabricated inbox, feed or login. The supplied classic icon remains the only image asset on the installation page. Dark neutral surfaces and blue actions follow shared tokens in src/tokens.ts.
 
@@ -18,4 +18,4 @@ Background #101114; surface #202126; text #f5f5f7; muted #b9bbc4; border #42444c
 
 ## Verification limits
 
-Capture search/site at 375/768/1280px, plus automatic pending/unavailable states, Home and mutual/own/nonmutual profiles in the local fixture. Native fixture controls are preserved, not replacements rendered by the extension. This proves local UI and adapter behavior, not authenticated Instagram appearance or physical iPhone execution. Unknown authors/grids stay hidden.
+Capture search/site at 375/768/1280px, plus automatic pending/unavailable states, Home and followed/own/unfollowed profiles in the local fixture. Native fixture controls are preserved, not replacements rendered by the extension. This proves local UI and adapter behavior, not authenticated Instagram appearance or physical iPhone execution. Unknown authors/grids stay hidden.

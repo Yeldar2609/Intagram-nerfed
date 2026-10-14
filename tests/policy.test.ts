@@ -28,7 +28,7 @@ describe("Instagram navigation policy", () => {
     expect(shouldRedirect(path)).toBe(false);
   });
   test("preserves Home", () => {
-    // Given Home, preserve the route so stories and mutual posts can render.
+    // Given Home, preserve the route so stories and followed posts can render.
     expect(shouldRedirect("/")).toBe(false);
   });
   test("distinguishes usernames from reserved route names", () => {

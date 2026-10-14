@@ -12,11 +12,9 @@ const Identity = z.object({
 });
 const User = Identity.extend({
   followed_by_viewer: z.boolean().optional(),
-  follows_viewer: z.boolean().optional(),
   friendship_status: z
     .object({
       following: z.boolean().optional(),
-      followed_by: z.boolean().optional(),
     })
     .nullable()
     .optional(),
@@ -24,7 +22,7 @@ const User = Identity.extend({
 export type Relationship = {
   readonly username: string;
   readonly id: string;
-  readonly mutual: boolean;
+  readonly following: boolean;
 };
 export interface FriendApi {
   owner(id: string, signal: AbortSignal): Promise<string>;
@@ -56,15 +54,9 @@ export function parseRelationship(
   const id = user.id ?? user.pk;
   const following =
     user.followed_by_viewer ?? user.friendship_status?.following;
-  const followedBy = user.follows_viewer ?? user.friendship_status?.followed_by;
-  if (
-    !id ||
-    user.username !== username ||
-    following === undefined ||
-    followedBy === undefined
-  )
+  if (!id || user.username !== username || following === undefined)
     throw unsupported();
-  return { username: user.username, id, mutual: following && followedBy };
+  return { username: user.username, id, following };
 }
 const PROFILE_DOC = "28036671149327607";
 const SEARCH_DOC = "26347858941511777";

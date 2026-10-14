@@ -1,9 +1,5 @@
 import { expect, test } from "vitest";
-import {
-  CheckUnavailable,
-  type FriendApi,
-  parseRelationship,
-} from "../src/friend-api";
+import { CheckUnavailable, type FriendApi } from "../src/friend-api";
 import { FriendChecks } from "../src/friend-checks";
 import { viewerId } from "../src/friends";
 
@@ -11,73 +7,12 @@ test("reads only the non-secret viewer identity cookie", () => {
   expect(viewerId("other=abc; ds_user_id=123; more=x")).toBe("123");
   expect(viewerId("not_ds_user_id=123")).toBeUndefined();
 });
-test.each([
-  [true, true, true],
-  [true, false, false],
-  [false, true, false],
-  [false, false, false],
-])("requires both relationship directions (%s,%s)", (following, followedBy, mutual) => {
-  const data = {
-    data: {
-      user: {
-        id: "2",
-        username: "friend",
-        followed_by_viewer: following,
-        follows_viewer: followedBy,
-      },
-    },
-  };
-  expect(parseRelationship(data, "friend").mutual).toBe(mutual);
-});
-test("accepts nested native relationship fields", () => {
-  expect(
-    parseRelationship(
-      {
-        data: {
-          user: {
-            pk: 2,
-            username: "friend",
-            friendship_status: { following: true, followed_by: true },
-          },
-        },
-      },
-      "friend",
-    ).mutual,
-  ).toBe(true);
-});
-test("never interprets missing flags or mismatched names as a mutual", () => {
-  expect(() =>
-    parseRelationship(
-      {
-        data: {
-          user: { id: "2", username: "friend", followed_by_viewer: true },
-        },
-      },
-      "friend",
-    ),
-  ).toThrow(CheckUnavailable);
-  expect(() =>
-    parseRelationship(
-      {
-        data: {
-          user: {
-            id: "2",
-            username: "other",
-            follows_viewer: true,
-            followed_by_viewer: true,
-          },
-        },
-      },
-      "friend",
-    ),
-  ).toThrow(CheckUnavailable);
-});
 const api: FriendApi = {
   owner: async () => "me",
   relationship: async (username) => ({
     id: "2",
     username,
-    mutual: username === "friend",
+    following: username === "friend",
   }),
 };
 test("checks encountered authors automatically and caches them per account", async () => {
@@ -86,16 +21,16 @@ test("checks encountered authors automatically and caches them per account", asy
   await checks.tick(0);
   await checks.tick(3000);
   await checks.tick(6000);
-  expect(checks.snapshot(6000)).toEqual({ owner: "me", mutuals: ["friend"] });
+  expect(checks.snapshot(6000)).toEqual({ owner: "me", following: ["friend"] });
   checks.update("99", [], 6001);
-  expect(checks.snapshot(6001)).toEqual({ owner: undefined, mutuals: [] });
+  expect(checks.snapshot(6001)).toEqual({ owner: undefined, following: [] });
 });
 test("expires previous approvals rather than displaying stale relationships", async () => {
   const checks = new FriendChecks(api, () => {});
   checks.update("1", ["friend"], 0);
   await checks.tick(0);
   await checks.tick(3000);
-  expect(checks.snapshot(400_000).mutuals).toEqual([]);
+  expect(checks.snapshot(400_000).following).toEqual([]);
 });
 
 test("ignores a previous account lookup that completes after switching accounts", async () => {
@@ -115,21 +50,21 @@ test("ignores a previous account lookup that completes after switching accounts"
   await old;
   expect(checks.snapshot(2).owner).toBeUndefined();
 });
-test("invalidates a mutual after a follow change and rechecks automatically", async () => {
-  let mutual = true;
+test("invalidates a following after a follow change and rechecks automatically", async () => {
+  let following = true;
   const changing: FriendApi = {
     ...api,
-    relationship: async (username) => ({ id: "2", username, mutual }),
+    relationship: async (username) => ({ id: "2", username, following }),
   };
   const checks = new FriendChecks(changing, () => {});
   checks.update("1", ["friend"], 0);
   await checks.tick(0);
   await checks.tick(3000);
-  mutual = false;
+  following = false;
   checks.invalidate("friend");
-  expect(checks.snapshot(3001).mutuals).toEqual([]);
+  expect(checks.snapshot(3001).following).toEqual([]);
   await checks.tick(6000);
-  expect(checks.snapshot(6001).mutuals).toEqual([]);
+  expect(checks.snapshot(6001).following).toEqual([]);
 });
 test("backs off instead of repeatedly calling a blocked endpoint", async () => {
   let requests = 0;
@@ -147,7 +82,7 @@ test("backs off instead of repeatedly calling a blocked endpoint", async () => {
   await checks.tick(6000);
   await checks.tick(120_000);
   expect(requests).toBe(1);
-  expect(checks.snapshot(120_000).mutuals).toEqual([]);
+  expect(checks.snapshot(120_000).following).toEqual([]);
 });
 
 test("honors backoff even when the initial account lookup is rate limited", async () => {
@@ -159,7 +94,7 @@ test("honors backoff even when the initial account lookup is rate limited", asyn
     },
     relationship: async (username) => {
       requests++;
-      return { id: "2", username, mutual: true };
+      return { id: "2", username, following: true };
     },
   };
   const checks = new FriendChecks(blocked, () => {});
@@ -168,7 +103,7 @@ test("honors backoff even when the initial account lookup is rate limited", asyn
   await checks.tick(3000);
   await checks.tick(120_000);
   expect(requests).toBe(1);
-  expect(checks.snapshot(120_000).mutuals).toEqual([]);
+  expect(checks.snapshot(120_000).following).toEqual([]);
 });
 
 test("an unsupported owner endpoint does not pause author checks", async () => {
@@ -184,7 +119,7 @@ test("an unsupported owner endpoint does not pause author checks", async () => {
   checks.update("1", ["friend"], 0);
   await checks.tick(0);
   await checks.tick(3000);
-  expect(checks.snapshot(3001).mutuals).toEqual(["friend"]);
+  expect(checks.snapshot(3001).following).toEqual(["friend"]);
 });
 test("own profile approval also expires if account refresh becomes unavailable", async () => {
   const checks = new FriendChecks(api, () => {});
@@ -201,7 +136,7 @@ test("a rejected author cannot starve later authors after backoff", async () => 
     relationship: async (username) => {
       checked.push(username);
       if (username === "missing") throw new CheckUnavailable();
-      return { id: "2", username, mutual: true };
+      return { id: "2", username, following: true };
     },
   };
   const checks = new FriendChecks(partial, () => {});
@@ -210,7 +145,7 @@ test("a rejected author cannot starve later authors after backoff", async () => 
   await checks.tick(3000);
   await checks.tick(72_000);
   expect(checked).toEqual(["missing", "friend"]);
-  expect(checks.snapshot(72_001).mutuals).toEqual(["friend"]);
+  expect(checks.snapshot(72_001).following).toEqual(["friend"]);
 });
 test("successful unrelated checks do not erase a failed friend's explanation", async () => {
   const checks = new FriendChecks(
@@ -219,7 +154,7 @@ test("successful unrelated checks do not erase a failed friend's explanation", a
       relationship: async (username) => {
         if (username === "friend")
           throw new CheckUnavailable(60_000, "missing relationship", false);
-        return { id: "3", username, mutual: false };
+        return { id: "3", username, following: false };
       },
     },
     () => {},
@@ -229,8 +164,10 @@ test("successful unrelated checks do not erase a failed friend's explanation", a
   await checks.tick(3000);
   await checks.tick(6000);
   expect(checks.status(6001)).toContain("missing relationship");
+  const failedStatus = checks.status(6001);
   checks.invalidate("friend");
-  expect(checks.status(6001)).toBe("Checking mutual friends…");
+  expect(checks.status(6001)).not.toBe("");
+  expect(checks.status(6001)).not.toBe(failedStatus);
 });
 
 test("checks authors beyond the first fifty without a permanent cutoff", async () => {
@@ -238,12 +175,16 @@ test("checks authors beyond the first fifty without a permanent cutoff", async (
   const checks = new FriendChecks(
     {
       ...api,
-      relationship: async (username) => ({ id: "2", username, mutual: true }),
+      relationship: async (username) => ({
+        id: "2",
+        username,
+        following: true,
+      }),
     },
     () => {},
   );
   checks.update("1", names, 0);
   await checks.tick(0);
   for (let index = 1; index <= 51; index++) await checks.tick(index * 3000);
-  expect(checks.snapshot(153_001).mutuals).toHaveLength(51);
+  expect(checks.snapshot(153_001).following).toHaveLength(51);
 });

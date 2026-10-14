@@ -39,7 +39,7 @@ await check(
 await capture("home");
 await browse("js", "document.cookie='ds_user_id=99;path=/'");
 await eventually(
-  "Account switch clears mutual approval",
+  "Account switch clears followed approval",
   `(${hidden})('friend-video')`,
 );
 await capture("account-switched");
@@ -67,7 +67,7 @@ await browse("viewport", "375x900");
 await browse("fill", "#native-search", "friend");
 await browse("click", "#person-result");
 await eventually(
-  "Search result opens mutual profile without import",
+  "Search result opens followed profile without import",
   `location.pathname==='/friend/'&&!(${hidden})('grid-post')&&(${hidden})('profile-recommended')`,
 );
 await capture("profile-friend");
@@ -87,7 +87,7 @@ await eventually(
 await capture("profile-own");
 await browse("goto", `${base}/stranger/`);
 await eventually(
-  "Nonmutual profile retains Follow but hides posts",
+  "Unfollowed profile retains Follow but hides posts",
   `!(${hidden})('follow')&&(${hidden})('grid-post')`,
 );
 await capture("profile-stranger");
